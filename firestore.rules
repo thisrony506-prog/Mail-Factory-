@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.admin == true ||
+        (
+          request.auth.token.email in ['gmrony135@gmail.com', 'mailfactorybd@gmail.com'] &&
+          request.auth.token.email_verified == true
+        )
+      );
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidRating(rating) {
+      return rating is int && rating >= 1 && rating <= 5;
+    }
+
+    function isValidText(text) {
+      return text is string && text.size() > 0 && text.size() <= 1000;
+    }
+
+    // ==========================================
+    // 1. REVIEWS COLLECTION
+    // ==========================================
+    match /reviews/{userId} {
+      
+      // GET (Single Document): Admin, or if approved, or document owner
+      allow get: if isAdmin() || (resource.data.status == 'approved') || isOwner(userId);
+      
+      // LIST (Collection Queries): 
+      // Admin can query all reviews.
+      // General public/users can ONLY query where status == 'approved'
+      allow list: if isAdmin() || (resource.data.status == 'approved');
+
+      // CREATE (New Review):
+      // - User must be logged in and can only create for their own userId
+      // - Status MUST be forced to 'pending'
+      // - Rating must be 1 to 5 integer
+      // - Text must be non-empty string up to 1000 characters
+      allow create: if isOwner(userId)
+                    && request.resource.data.userId == userId
+                    && request.resource.data.status == 'pending'
+                    && isValidRating(request.resource.data.rating)
+                    && isValidText(request.resource.data.text);
+
+      // UPDATE (Edit Review / Admin Moderation):
+      // - Admin can update any review (e.g. approve/reject status)
+      // - Regular user can only edit their own review:
+      //     * Status is strictly forced back to 'pending'
+      //     * userId cannot be altered
+      //     * createdAt cannot be modified
+      //     * Rating and text must be valid
+      allow update: if isAdmin() || (
+        isOwner(userId)
+        && request.resource.data.userId == userId
+        && request.resource.data.status == 'pending'
+        && isValidRating(request.resource.data.rating)
+        && isValidText(request.resource.data.text)
+        && request.resource.data.createdAt == resource.data.createdAt
+      );
+
+      // DELETE:
+      // Only Admin or the owner can delete the review
+      allow delete: if isAdmin() || isOwner(userId);
+    }
+
+    // ==========================================
+    // 2. SYSTEM COLLECTION (Stats & App Metadata)
+    // ==========================================
+    match /system/{docId} {
+      // Anyone can read review statistics (avg rating, total count)
+      allow read: if true;
+      // Only Admin or Cloud Functions (Admin SDK) can write system stats
+      allow write: if isAdmin();
+    }
+  }
+}

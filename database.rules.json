@@ -1,0 +1,67 @@
+{
+  "rules": {
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+    },
+    "shifts": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+    },
+    "top_sellers": {
+      ".read": true,
+      ".write": "auth != null && (auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+    },
+    "used_emails": {
+      ".indexOn": ["email"],
+      ".read": "auth != null",
+      "$emailKey": {
+        ".write": "auth != null"
+      }
+    },
+    "users": {
+      ".indexOn": ["referralCode", "balance"],
+      ".read": "auth != null",
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
+        "notifications": {
+          ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
+          ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+        }
+      }
+    },
+    "submissions": {
+      ".indexOn": ["userId", "status", "submittedAt"],
+      ".read": "auth != null && (auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
+      "$subId": {
+        ".write": "auth != null"
+      }
+    },
+    "user_submissions": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+      }
+    },
+    "withdraw_requests": {
+      ".indexOn": ["userId", "status", "requestedAt"],
+      ".read": "auth != null && (auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
+      "$wdId": {
+        ".write": "auth != null"
+      }
+    },
+    "user_withdrawals": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+      }
+    },
+    "support_chats": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+      }
+    }
+  }
+}
