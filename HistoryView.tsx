@@ -295,33 +295,41 @@ export const HistoryView: React.FC = () => {
             </div>
           </div>
 
-          {allUsers.slice(0, 8).map((u, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-sm flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-700 text-xs font-black flex items-center justify-center">
-                  {(u.username || 'U').charAt(0).toUpperCase()}
+          {allUsers.filter(u => u && !u.uid?.startsWith('seller_')).slice(0, 10).map((u, idx) => {
+            const displayName = u.username || (u.email ? u.email.split('@')[0] : `Seller ${idx + 1}`);
+            const earn = Number(u.totalEarnings) || (Number(u.balance || 0) + Number(u.total_withdrawn || 0)) || Number(u.balance || 0);
+            return (
+              <div
+                key={u.uid || idx}
+                className="bg-white rounded-2xl border border-slate-200 p-3.5 shadow-sm flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2.5">
+                  {u.photoURL ? (
+                    <img src={u.photoURL} alt={displayName} className="w-8 h-8 rounded-full object-cover shadow-xs" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 text-xs font-black flex items-center justify-center shadow-xs">
+                      {displayName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-xs font-extrabold text-slate-800 block">
+                      {displayName}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 font-bold">
+                      ● Verified Seller • {u.manual_approved_count || u.total_submitted || 0} Gmails
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-xs font-extrabold text-slate-800 block">
-                    {u.username || 'Anonymous User'}
-                  </span>
-                  <span className="text-[10px] text-emerald-600 font-bold">
-                    ● Verified Seller
-                  </span>
-                </div>
-              </div>
 
-              <div className="text-right">
-                <span className="text-sm font-black text-indigo-700 block">
-                  ৳{(Number(u.balance) || 0).toFixed(0)} BDT
-                </span>
-                <span className="text-[10px] text-slate-400">Total Balance</span>
+                <div className="text-right">
+                  <span className="text-sm font-black text-indigo-700 block font-mono">
+                    ৳{earn.toLocaleString('en-US')}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-medium">মোট উপার্জিত</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -125,8 +125,21 @@ export interface FAQItem {
 
 
 
-export type ActiveTab = 'home' | 'exchange' | 'history' | 'sellers' | 'profile' | 'withdraw' | 'privacy' | 'about' | 'reviews' | 'admin_reviews';
+export type ActiveTab = 'home' | 'exchange' | 'history' | 'sellers' | 'profile' | 'withdraw' | 'privacy' | 'about' | 'reviews' | 'admin_reviews' | 'admin_top_sellers';
 export type Language = 'bn' | 'en';
+
+export interface TopSellerItem {
+  uid: string;
+  username: string;
+  email?: string;
+  photoURL?: string;
+  totalEarnings: number;
+  balance?: number;
+  total_submitted?: number;
+  manual_approved_count?: number;
+  badge?: string;
+  rank?: number;
+}
 
 export interface Review {
   id: string; // Document ID (usually same as userId)

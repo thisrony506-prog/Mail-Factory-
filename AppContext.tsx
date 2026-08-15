@@ -27,6 +27,7 @@ import {
   ChatMessage,
   ActiveTab,
   Language,
+  TopSellerItem,
 } from './types';
 
 export const DEFAULT_LOGO = "https://z-cdn-media.chatglm.cn/files/254f7f82-610d-4700-abc8-2e10435c149a.png?auth_key=1874890147-5ce8a86650d0488299a25b07660a73f8-0-b25e70b5ad3109adec869d78d8584440";
@@ -39,104 +40,9 @@ export const DEFAULT_LEVELS: LevelConfig[] = [
   { level: 5, approved: 500, rate: 14, old_rate: 12, title: 'Diamond Boss', perkDescription: 'Maximum rate + VIP 24/7 dedicated review' },
 ];
 
-export const DEFAULT_TOP_SELLERS: UserProfile[] = [
-  {
-    uid: 'seller_1',
-    username: 'Tanvir Hossain',
-    email: 'tanvir***@gmail.com',
-    balance: 4850,
-    hold: 0,
-    referralCode: 'TANVIR88',
-    referralEarnings: 450,
-    totalEarnings: 12500,
-    total_submitted: 350,
-    total_withdrawn: 8000,
-    login_streak: 15,
-    createdAt: Date.now() - 86400000 * 20,
-    last_login: Date.now(),
-    manual_approved_count: 320,
-  },
-  {
-    uid: 'seller_2',
-    username: 'Shakil Ahmed',
-    email: 'shakil***@gmail.com',
-    balance: 3420,
-    hold: 0,
-    referralCode: 'SHAKIL77',
-    referralEarnings: 310,
-    totalEarnings: 8900,
-    total_submitted: 260,
-    total_withdrawn: 5500,
-    login_streak: 12,
-    createdAt: Date.now() - 86400000 * 15,
-    last_login: Date.now(),
-    manual_approved_count: 240,
-  },
-  {
-    uid: 'seller_3',
-    username: 'Mehedi Hasan',
-    email: 'mehedi***@gmail.com',
-    balance: 2890,
-    hold: 0,
-    referralCode: 'MEHEDI55',
-    referralEarnings: 220,
-    totalEarnings: 6400,
-    total_submitted: 190,
-    total_withdrawn: 4200,
-    login_streak: 10,
-    createdAt: Date.now() - 86400000 * 12,
-    last_login: Date.now(),
-    manual_approved_count: 180,
-  },
-  {
-    uid: 'seller_4',
-    username: 'Rakibul Islam',
-    email: 'rakib***@gmail.com',
-    balance: 2150,
-    hold: 0,
-    referralCode: 'RAKIB12',
-    referralEarnings: 180,
-    totalEarnings: 5100,
-    total_submitted: 150,
-    total_withdrawn: 3000,
-    login_streak: 8,
-    createdAt: Date.now() - 86400000 * 10,
-    last_login: Date.now(),
-    manual_approved_count: 140,
-  },
-  {
-    uid: 'seller_5',
-    username: 'Fahim Faisal',
-    email: 'fahim***@gmail.com',
-    balance: 1780,
-    hold: 0,
-    referralCode: 'FAHIM99',
-    referralEarnings: 120,
-    totalEarnings: 4200,
-    total_submitted: 120,
-    total_withdrawn: 2500,
-    login_streak: 6,
-    createdAt: Date.now() - 86400000 * 8,
-    last_login: Date.now(),
-    manual_approved_count: 110,
-  },
-  {
-    uid: 'seller_6',
-    username: 'Nazmul Huda',
-    email: 'nazmul***@gmail.com',
-    balance: 1450,
-    hold: 0,
-    referralCode: 'NAZMUL33',
-    referralEarnings: 90,
-    totalEarnings: 3400,
-    total_submitted: 100,
-    total_withdrawn: 2000,
-    login_streak: 5,
-    createdAt: Date.now() - 86400000 * 5,
-    last_login: Date.now(),
-    manual_approved_count: 90,
-  },
-];
+export const DEFAULT_TOP_SELLERS: UserProfile[] = [];
+
+export const INITIAL_TOP_SELLERS: TopSellerItem[] = [];
 
 export const DEFAULT_SHIFTS: Record<string, ShiftInfo> = {
   shift1: { title: 'শুভ রাত্রি প্রথম সময়', time: '12:00 AM', active: true, order: 1, icon: 'moon' },
@@ -181,6 +87,9 @@ interface AppContextType {
   markNotificationRead: (id: string | number) => void;
   markAllNotificationsRead: () => void;
   allUsers: UserProfile[];
+  topSellers: TopSellerItem[];
+  setTopSellers: React.Dispatch<React.SetStateAction<TopSellerItem[]>>;
+  syncRealUsersToTopSellers: () => Promise<TopSellerItem[]>;
   chatMessages: ChatMessage[];
   sendChatMessage: (msg: string) => Promise<void>;
   submitGmails: (data: {
@@ -233,7 +142,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [signupBonusReferrer, setSignupBonusReferrer] = useState<number>(5);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [withdrawRequests, setWithdrawRequests] = useState<WithdrawRequest[]>([]);
-  const [allUsers, setAllUsers] = useState<UserProfile[]>(DEFAULT_TOP_SELLERS);
+  const [allUsers, setAllUsers] = useState<UserProfile[]>(() => {
+    try {
+      const cached = localStorage.getItem('mf_real_top_sellers');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return DEFAULT_TOP_SELLERS;
+  });
+  const [topSellers, setTopSellers] = useState<TopSellerItem[]>(() => {
+    try {
+      const cached = localStorage.getItem('mf_top_sellers_list');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return INITIAL_TOP_SELLERS;
+  });
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
@@ -408,32 +336,54 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  // Sync Top Sellers Leaderboard (Public)
+  // Sync Top Sellers Leaderboard (Configured directly in Firebase RTDB)
   useEffect(() => {
     try {
       const topSellersRef = ref(db, 'top_sellers');
       const unsubscribe = onValue(topSellersRef, (snap) => {
         if (snap.exists()) {
           const val = snap.val();
-          const list: UserProfile[] = Array.isArray(val)
-            ? val
-            : Object.keys(val).map((k) => ({ ...val[k], uid: k }));
-          if (list.length > 0) {
-            setAllUsers(list);
+          let list: TopSellerItem[] = [];
+          if (Array.isArray(val)) {
+            list = val.filter(Boolean);
+          } else if (val && typeof val === 'object') {
+            list = Object.keys(val).map((k) => ({ ...val[k], uid: val[k].uid || k }));
           }
+
+          // Filter out any fake demo sellers (such as seller_1, seller_2, etc.)
+          const realList: TopSellerItem[] = list
+            .filter((s) => s && !s.uid?.startsWith('seller_') && s.username !== 'Tanvir Hossain' && s.username !== 'Shakil Ahmed')
+            .map((s, idx) => ({
+              uid: s.uid || `user_${idx + 1}`,
+              username: s.username || (s.email ? s.email.split('@')[0] : `Seller ${idx + 1}`),
+              email: s.email || '',
+              photoURL: s.photoURL || '',
+              totalEarnings: Number(s.totalEarnings) || Number(s.balance) || 0,
+              balance: Number(s.balance) || 0,
+              manual_approved_count: Number(s.manual_approved_count) || Number(s.total_submitted) || 0,
+              total_submitted: Number(s.total_submitted) || 0,
+              badge: s.badge || (idx === 0 ? 'VIP Champion' : idx < 3 ? 'Diamond VIP' : 'Gold Partner'),
+              rank: s.rank || idx + 1,
+            }));
+
+          setTopSellers(realList);
+          try {
+            localStorage.setItem('mf_top_sellers_list', JSON.stringify(realList));
+          } catch {}
+        } else {
+          setTopSellers([]);
         }
       });
       return () => unsubscribe();
     } catch (e) {
       console.warn('top_sellers listener error:', e);
+      setTopSellers([]);
     }
   }, []);
 
-  // Sync All Users (for Leaderboard & Referral Friend list - Admins only)
+  // Sync All Real Users from Firebase (for Referral List & Admin picker)
   useEffect(() => {
-    if (!user || (user.email !== 'gmrony135@gmail.com' && user.email !== 'mailfactorybd@gmail.com')) {
-      return;
-    }
+    if (!user) return;
     try {
       const usersRef = ref(db, 'users');
       const unsubscribe = onValue(usersRef, (snap) => {
@@ -441,11 +391,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const list: UserProfile[] = [];
           snap.forEach((child) => {
             const u = child.val();
-            u.uid = child.key;
-            list.push(u);
+            if (u && typeof u === 'object') {
+              u.uid = child.key;
+              if (!u.username && u.email) {
+                u.username = u.email.split('@')[0];
+              }
+              list.push(u);
+            }
           });
           if (list.length > 0) {
-            setAllUsers(list);
+            const sorted = [...list].sort((a, b) => {
+              const earnA = Number(a.totalEarnings) || (Number(a.balance || 0) + Number(a.total_withdrawn || 0)) || Number(a.balance || 0);
+              const earnB = Number(b.totalEarnings) || (Number(b.balance || 0) + Number(b.total_withdrawn || 0)) || Number(b.balance || 0);
+              return earnB - earnA;
+            });
+            setAllUsers(sorted);
+            try {
+              localStorage.setItem('mf_real_top_sellers', JSON.stringify(sorted));
+            } catch {}
           }
         }
       });
@@ -775,6 +738,64 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Sync Real Users to Top Sellers
+  const syncRealUsersToTopSellers = async (): Promise<TopSellerItem[]> => {
+    try {
+      let sourceUsers = allUsers;
+      if (sourceUsers.length === 0) {
+        const snap = await get(ref(db, 'users'));
+        if (snap.exists()) {
+          const list: UserProfile[] = [];
+          snap.forEach((child) => {
+            const u = child.val();
+            if (u && typeof u === 'object') {
+              u.uid = child.key;
+              if (!u.username && u.email) {
+                u.username = u.email.split('@')[0];
+              }
+              list.push(u);
+            }
+          });
+          sourceUsers = list;
+        }
+      }
+
+      // Filter out demo placeholders and sort by real earnings/balance
+      const realFiltered = [...sourceUsers]
+        .filter((u) => u && !u.uid?.startsWith('seller_'))
+        .sort((a, b) => {
+          const earnA = Number(a.totalEarnings) || (Number(a.balance || 0) + Number(a.total_withdrawn || 0)) || Number(a.balance || 0);
+          const earnB = Number(b.totalEarnings) || (Number(b.balance || 0) + Number(b.total_withdrawn || 0)) || Number(b.balance || 0);
+          return earnB - earnA;
+        });
+
+      const top10: TopSellerItem[] = realFiltered.slice(0, 10).map((u, idx) => ({
+        uid: u.uid || `user_${idx + 1}`,
+        username: u.username || (u.email ? u.email.split('@')[0] : `Seller ${idx + 1}`),
+        email: u.email || '',
+        photoURL: u.photoURL || '',
+        totalEarnings: Number(u.totalEarnings) || (Number(u.balance || 0) + Number(u.total_withdrawn || 0)) || Number(u.balance || 0),
+        balance: Number(u.balance) || 0,
+        manual_approved_count: Number(u.manual_approved_count) || Number(u.total_submitted) || 0,
+        total_submitted: Number(u.total_submitted) || 0,
+        badge: idx === 0 ? 'VIP Champion' : idx < 3 ? 'Diamond VIP' : 'Gold Partner',
+        rank: idx + 1,
+      }));
+
+      setTopSellers(top10);
+      try {
+        await set(ref(db, 'top_sellers'), top10);
+        localStorage.setItem('mf_top_sellers_list', JSON.stringify(top10));
+      } catch (err) {
+        console.warn('Failed to publish to top_sellers:', err);
+      }
+      return top10;
+    } catch (e) {
+      console.error('Error syncing real users to top sellers:', e);
+      return [];
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -808,6 +829,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         markNotificationRead,
         markAllNotificationsRead,
         allUsers,
+        topSellers,
+        setTopSellers,
+        syncRealUsersToTopSellers,
         chatMessages,
         sendChatMessage,
         submitGmails,

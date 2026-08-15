@@ -19,7 +19,7 @@ import {
   Trophy,
   ChevronRight
 } from 'lucide-react';
-import { GmailType } from './types';
+import { GmailType, TopSellerItem } from './types';
 
 export const HomeView: React.FC = () => {
   const {
@@ -31,6 +31,7 @@ export const HomeView: React.FC = () => {
     appLogo,
     user,
     profile,
+    topSellers,
     allUsers,
     setAuthModalOpen,
   } = useApp();
@@ -295,34 +296,128 @@ export const HomeView: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 pt-1">
-          {allUsers.slice(0, 3).map((seller, idx) => {
-            const medals = ['👑 1st', '🥈 2nd', '🥉 3rd'];
-            const bgStyles = [
-              'bg-gradient-to-b from-amber-50 to-amber-100/80 border-amber-300 text-amber-950',
-              'bg-gradient-to-b from-slate-50 to-slate-100 border-slate-300 text-slate-900',
-              'bg-gradient-to-b from-orange-50 to-orange-100/70 border-orange-200 text-orange-950',
-            ];
+        <div className="pt-1">
+          {(() => {
+            let sellersList: TopSellerItem[] = [];
+
+            // 1. Prioritize configured topSellers from Firebase (filtering any demo items)
+            const validTop = (topSellers || []).filter(
+              (s) => s && !s.uid?.startsWith('seller_') && s.username !== 'Tanvir Hossain' && s.username !== 'Shakil Ahmed'
+            );
+            if (validTop.length > 0) {
+              sellersList = validTop.slice(0, 3).map((seller, idx) => {
+                let photo = seller.photoURL;
+                if (!photo && allUsers && allUsers.length > 0) {
+                  const matched = allUsers.find(
+                    (u) =>
+                      (u.uid && u.uid === seller.uid) ||
+                      (u.email && seller.email && u.email.toLowerCase() === seller.email.toLowerCase()) ||
+                      (u.username && seller.username && u.username.toLowerCase() === seller.username.toLowerCase())
+                  );
+                  if (matched && matched.photoURL) {
+                    photo = matched.photoURL;
+                  }
+                }
+                return {
+                  ...seller,
+                  photoURL: photo || '',
+                  rank: idx + 1,
+                };
+              });
+            } else {
+              const realUsers = (allUsers || []).filter(
+                (u) => u && !u.uid?.startsWith('seller_') && u.username !== 'Tanvir Hossain' && u.username !== 'Shakil Ahmed'
+              );
+              if (realUsers.length > 0) {
+                sellersList = realUsers
+                  .sort((a, b) => {
+                    const earnA = Number(a.totalEarnings) || (Number(a.balance || 0) + Number(a.total_withdrawn || 0)) || Number(a.balance || 0);
+                    const earnB = Number(b.totalEarnings) || (Number(b.balance || 0) + Number(b.total_withdrawn || 0)) || Number(b.balance || 0);
+                    return earnB - earnA;
+                  })
+                  .slice(0, 3)
+                  .map((u, idx) => ({
+                    uid: u.uid || `user_${idx + 1}`,
+                    username: u.username || (u.email ? u.email.split('@')[0] : `Seller ${idx + 1}`),
+                    email: u.email || '',
+                    photoURL: u.photoURL || '',
+                    totalEarnings: Number(u.totalEarnings) || (Number(u.balance || 0) + Number(u.total_withdrawn || 0)) || Number(u.balance || 0),
+                    balance: Number(u.balance) || 0,
+                    manual_approved_count: Number(u.manual_approved_count) || Number(u.total_submitted) || 0,
+                    total_submitted: Number(u.total_submitted) || 0,
+                    badge: idx === 0 ? 'VIP Champion' : idx < 3 ? 'Diamond VIP' : 'Gold Partner',
+                    rank: idx + 1,
+                  }));
+              }
+            }
+
+            const top3 = sellersList.slice(0, 3);
+
+            if (top3.length === 0) {
+              return (
+                <div className="py-6 text-center bg-slate-50/70 rounded-2xl border border-dashed border-slate-200 px-4">
+                  <Trophy className="w-6 h-6 text-amber-500 mx-auto mb-1.5 opacity-80" />
+                  <p className="text-xs font-bold text-slate-700">
+                    {language === 'bn' ? 'এখনও কোনো সেলার যুক্ত হননি' : 'No Leaderboard Sellers Yet'}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 mb-2.5">
+                    {language === 'bn' ? 'আজই জিমেইল জমা দিয়ে ১ম স্থান অর্জন করুন!' : 'Submit Gmails today to take 1st place!'}
+                  </p>
+                  <button
+                    onClick={() => {
+                      setActiveTab('exchange');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs inline-flex items-center gap-1 shadow-xs transition-all active:scale-95"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-300" />
+                    <span>{language === 'bn' ? 'জিমেইল এক্সচেঞ্জ করুন' : 'Start Exchange'}</span>
+                  </button>
+                </div>
+              );
+            }
+
+            const gridCols = top3.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' : top3.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
+
             return (
-              <div
-                key={seller.uid || idx}
-                className={`p-2.5 rounded-2xl border text-center relative flex flex-col items-center justify-between ${bgStyles[idx] || 'bg-slate-50 border-slate-200'}`}
-              >
-                <span className="text-[9px] font-black uppercase tracking-wider mb-1 px-1.5 py-0.5 rounded-full bg-white/80 shadow-xs">
-                  {medals[idx]}
-                </span>
-                <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center my-0.5 shadow-sm">
-                  {(seller.username || 'U').charAt(0).toUpperCase()}
-                </div>
-                <div className="text-[11px] font-extrabold truncate w-full mt-1">
-                  {seller.username}
-                </div>
-                <div className="text-xs font-black text-indigo-700 font-mono mt-0.5">
-                  ৳{(Number(seller.balance) || 0).toFixed(0)}
-                </div>
+              <div className={`grid ${gridCols} gap-2`}>
+                {top3.map((seller, idx) => {
+                  const medals = ['👑 1st', '🥈 2nd', '🥉 3rd'];
+                  const bgStyles = [
+                    'bg-gradient-to-b from-amber-50 to-amber-100/80 border-amber-300 text-amber-950',
+                    'bg-gradient-to-b from-slate-50 to-slate-100 border-slate-300 text-slate-900',
+                    'bg-gradient-to-b from-orange-50 to-orange-100/70 border-orange-200 text-orange-950',
+                  ];
+                  const earn = Number(seller.totalEarnings) || Number(seller.balance) || 0;
+                  const name = seller.username || seller.email?.split('@')[0] || 'User';
+                  const photo = seller.photoURL || '';
+                  return (
+                    <div
+                      key={seller.uid || idx}
+                      className={`p-2.5 rounded-2xl border text-center relative flex flex-col items-center justify-between ${bgStyles[idx] || 'bg-slate-50 border-slate-200'}`}
+                    >
+                      <span className="text-[9px] font-black uppercase tracking-wider mb-1 px-1.5 py-0.5 rounded-full bg-white/80 shadow-xs">
+                        {medals[idx]}
+                      </span>
+                      {photo ? (
+                        <img src={photo} alt={name} className="w-8 h-8 rounded-full object-cover my-0.5 shadow-sm border border-white/60" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center my-0.5 shadow-sm">
+                          {name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="text-[11px] font-extrabold truncate w-full mt-1">
+                        {name}
+                      </div>
+                      <div className="text-xs font-black text-indigo-700 font-mono mt-0.5">
+                        ৳{earn.toLocaleString('en-US')}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             );
-          })}
+          })()}
         </div>
       </div>
 

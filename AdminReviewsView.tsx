@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from './AppContext';
-import { firestore } from './firebase';
-import { collection, query, orderBy, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { ShieldCheck, Check, X, Trash2, ArrowLeft } from 'lucide-react';
+import { db } from './firebase';
+import { ref, onValue, update, remove } from 'firebase/database';
+import { Check, X, Trash2, ArrowLeft } from 'lucide-react';
 import { Review } from './types';
 import { hapticFeedback } from './haptics';
 
@@ -17,25 +17,35 @@ export const AdminReviewsView: React.FC = () => {
   const isAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
 
   useEffect(() => {
-    if (isAdmin) fetchAllReviews();
-  }, [isAdmin]);
-
-  const fetchAllReviews = async () => {
+    if (!isAdmin) return;
     try {
       setLoading(true);
-      const q = query(collection(firestore, 'reviews'), orderBy('createdAt', 'desc'));
-      const snap = await getDocs(q);
-      setReviews(snap.docs.map(d => ({ ...d.data(), id: d.id } as Review)));
-    } catch (err) {
-      console.error(err);
-    } finally {
+      const reviewsRef = ref(db, 'reviews');
+      const unsubscribe = onValue(reviewsRef, (snap) => {
+        setLoading(false);
+        const data = snap.val();
+        if (data && typeof data === 'object') {
+          const list: Review[] = Object.keys(data).map((k) => ({
+            ...data[k],
+            id: k,
+          }));
+          list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          setReviews(list);
+        } else {
+          setReviews([]);
+        }
+      }, () => {
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    } catch {
       setLoading(false);
     }
-  };
+  }, [isAdmin]);
 
   const updateStatus = async (reviewId: string, status: 'approved' | 'rejected') => {
     try {
-      await setDoc(doc(firestore, 'reviews', reviewId), { status, updatedAt: Date.now() }, { merge: true });
+      await update(ref(db, `reviews/${reviewId}`), { status, updatedAt: Date.now() });
       setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, status } : r));
       hapticFeedback.success();
     } catch (err) {
@@ -46,7 +56,7 @@ export const AdminReviewsView: React.FC = () => {
   const deleteReview = async (reviewId: string) => {
     if (!window.confirm("Are you sure you want to delete this review?")) return;
     try {
-      await deleteDoc(doc(firestore, 'reviews', reviewId));
+      await remove(ref(db, `reviews/${reviewId}`));
       setReviews(prev => prev.filter(r => r.id !== reviewId));
       hapticFeedback.medium();
     } catch (err) {

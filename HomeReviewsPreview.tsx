@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from './AppContext';
-import { firestore } from './firebase';
-import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import { ref, onValue } from 'firebase/database';
 import { Star, ArrowRight, ShieldCheck, User } from 'lucide-react';
 import { Review } from './types';
 
@@ -13,40 +13,42 @@ export const HomeReviewsPreview: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPreviewData = async () => {
-      try {
-        // Fetch stats if available
-        try {
-          const statsDoc = await getDoc(doc(firestore, 'system', 'reviewStats'));
-          if (statsDoc.exists()) {
-            const data = statsDoc.data();
-            setAvgRating(data.avgRating || 5.0);
-            setTotalCount(data.totalCount || 0);
-          }
-        } catch {
-          // Ignore stats permission error in dev/uninitialized state
-        }
-
-        // Fetch top 2 latest reviews
-        const q = query(
-          collection(firestore, 'reviews'),
-          where('status', '==', 'approved'),
-          orderBy('createdAt', 'desc'),
-          limit(2)
-        );
-        const snapshot = await getDocs(q);
-        setReviews(snapshot.docs.map(d => ({ ...(d.data() as any), id: d.id } as Review)));
-      } catch (err: any) {
-        // If rules not yet published in console or empty, gracefully silent
-        if (err?.code !== 'permission-denied') {
-          console.warn("Home reviews preview status:", err?.message || err);
-        }
-      } finally {
+    try {
+      const reviewsRef = ref(db, 'reviews');
+      const unsubscribe = onValue(reviewsRef, (snapshot) => {
         setLoading(false);
-      }
-    };
+        const data = snapshot.val();
+        if (data && typeof data === 'object') {
+          const allList: Review[] = Object.keys(data).map((k) => ({
+            ...data[k],
+            id: k,
+          }));
 
-    fetchPreviewData();
+          const approved = allList.filter((r) => r.status === 'approved');
+          let sum = 0;
+          approved.forEach((r) => {
+            sum += Number(r.rating) || 5;
+          });
+
+          setTotalCount(approved.length);
+          setAvgRating(approved.length > 0 ? sum / approved.length : 5.0);
+
+          // Top 2 latest reviews
+          const sorted = [...approved].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          setReviews(sorted.slice(0, 2));
+        } else {
+          setReviews([]);
+          setTotalCount(0);
+          setAvgRating(5.0);
+        }
+      }, () => {
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    } catch {
+      setLoading(false);
+    }
   }, []);
 
   if (loading || reviews.length === 0) return null;

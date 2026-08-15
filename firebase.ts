@@ -15,7 +15,6 @@ import {
   onAuthStateChanged,
   User
 } from 'firebase/auth';
-import { initializeFirestore, getFirestore } from 'firebase/firestore';
 import {
   getDatabase,
   ref,
@@ -46,15 +45,6 @@ export const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
 export const db: Database = getDatabase(app);
-export const firestore = (() => {
-  try {
-    return initializeFirestore(app, {
-      experimentalAutoDetectLongPolling: true,
-    });
-  } catch {
-    return getFirestore(app);
-  }
-})();
 export const googleProvider = new GoogleAuthProvider();
 
 export {

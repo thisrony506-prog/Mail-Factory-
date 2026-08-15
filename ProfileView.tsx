@@ -30,7 +30,8 @@ import {
   TrendingUp,
   Download,
   QrCode,
-  Activity
+  Activity,
+  Star
 } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import {
@@ -262,28 +263,36 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
 
         {/* Quick Actions Buttons */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           <button
             onClick={() => setActiveTab('withdraw')}
-            className="py-3 px-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow hover:opacity-95 active:scale-95 transition-all flex flex-col items-center justify-center gap-1"
+            className="py-3 px-1.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-[11px] shadow hover:opacity-95 active:scale-95 transition-all flex flex-col items-center justify-center gap-1"
           >
-            <Wallet className="w-5 h-5" />
+            <Wallet className="w-4 h-4" />
             <span>{t.withdraw}</span>
           </button>
 
           <button
             onClick={() => setActiveTab('history')}
-            className="py-3 px-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs active:scale-95 transition-all flex flex-col items-center justify-center gap-1"
+            className="py-3 px-1.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] active:scale-95 transition-all flex flex-col items-center justify-center gap-1"
           >
-            <Hourglass className="w-5 h-5 text-indigo-600" />
+            <Hourglass className="w-4 h-4 text-indigo-600" />
             <span>{t.history}</span>
           </button>
 
           <button
-            onClick={handleShare}
-            className="py-3 px-2 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border border-indigo-100"
+            onClick={() => setActiveTab('reviews')}
+            className="py-3 px-1.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[11px] active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border border-amber-200/80"
           >
-            <Gift className="w-5 h-5 text-indigo-600" />
+            <Star className="w-4 h-4 text-amber-600 fill-amber-500" />
+            <span>{language === 'bn' ? 'রিভিউ' : 'Reviews'}</span>
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="py-3 px-1.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border border-indigo-100"
+          >
+            <Gift className="w-4 h-4 text-indigo-600" />
             <span>{t.invite}</span>
           </button>
         </div>
@@ -692,21 +701,39 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
         
         {user && ['gmrony135@gmail.com', 'mailfactorybd@gmail.com'].includes(user.email || '') && (
-          <button
-            onClick={() => setActiveTab('admin_reviews')}
-            className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
-                <Shield className="w-4 h-4" />
+          <>
+            <button
+              onClick={() => setActiveTab('admin_top_sellers')}
+              className="w-full flex items-center justify-between p-3 text-left bg-amber-50/70 hover:bg-amber-100/70 border border-amber-200/80 rounded-2xl transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
+                  <Award className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="text-xs font-black text-amber-950">টপ ১০ সেলার ম্যানেজার (Admin)</h5>
+                  <span className="text-[10px] text-amber-800 font-medium">লিডারবোর্ডের সেরা ১০ জনের তালিকা সেট বা এডিট করুন</span>
+                </div>
               </div>
-              <div>
-                <h5 className="text-xs font-extrabold text-slate-800">Admin Review Moderation</h5>
-                <span className="text-[10px] text-slate-400 font-medium">Approve or reject customer reviews</span>
+              <ChevronRight className="w-4 h-4 text-amber-700" />
+            </button>
+
+            <button
+              onClick={() => setActiveTab('admin_reviews')}
+              className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
+                  <Shield className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="text-xs font-extrabold text-slate-800">Admin Review Moderation</h5>
+                  <span className="text-[10px] text-slate-400 font-medium">Approve or reject customer reviews</span>
+                </div>
               </div>
-            </div>
-            <ChevronRight className="w-4 h-4 text-slate-400" />
-          </button>
+              <ChevronRight className="w-4 h-4 text-slate-400" />
+            </button>
+          </>
         )}
         <button
           onClick={() => setChatDrawerOpen(true)}
@@ -719,6 +746,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <div>
               <h5 className="text-xs font-extrabold text-slate-800">{t.liveChat}</h5>
               <span className="text-[10px] text-slate-400 font-medium">Chat directly with admin team</span>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-400" />
+        </button>
+
+        <button
+          onClick={() => setActiveTab('reviews')}
+          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
+              <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+            </div>
+            <div>
+              <h5 className="text-xs font-extrabold text-slate-800">
+                {language === 'bn' ? 'কাস্টমার রিভিউ ও রেটিং' : 'User Reviews & Ratings'}
+              </h5>
+              <span className="text-[10px] text-slate-400 font-medium">
+                {language === 'bn' ? 'রিভিউ দেখুন অথবা আপনার মতামত দিন' : 'Read community reviews or submit yours'}
+              </span>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-400" />

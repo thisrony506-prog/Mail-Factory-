@@ -1,22 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from './AppContext';
 import { translations } from './i18n';
-import { firestore } from './firebase';
-import { 
-  collection, 
-  query, 
-  where, 
-  orderBy, 
-  limit, 
-  startAfter, 
-  getDocs, 
-  doc, 
-  setDoc, 
-  getDoc,
-  Timestamp 
-} from 'firebase/firestore';
+import { db } from './firebase';
+import { ref, get, set, onValue } from 'firebase/database';
 import { SEO } from './SEO';
-import { Star, ShieldCheck, User, MessageSquare, ChevronDown, CheckCircle, AlertCircle } from 'lucide-react';
+import { Star, ShieldCheck, User, ChevronDown } from 'lucide-react';
 import { Review } from './types';
 import { hapticFeedback } from './haptics';
 
@@ -26,8 +14,7 @@ export const ReviewsView: React.FC = () => {
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [lastDoc, setLastDoc] = useState<any>(null);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [displayCount, setDisplayCount] = useState<number>(10);
   
   // Stats
   const [avgRating, setAvgRating] = useState<number>(5.0);
@@ -42,91 +29,60 @@ export const ReviewsView: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [filterRating, setFilterRating] = useState<number | null>(null);
 
-  const fetchStats = async () => {
+  useEffect(() => {
     try {
-      const statsDoc = await getDoc(doc(firestore, 'system', 'reviewStats'));
-      if (statsDoc.exists()) {
-        const data = statsDoc.data();
-        setAvgRating(data.avgRating || 0);
-        setTotalCount(data.totalCount || 0);
-        setStarDist(data.starDist || {1:0, 2:0, 3:0, 4:0, 5:0});
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+      const reviewsRef = ref(db, 'reviews');
+      const unsubscribe = onValue(reviewsRef, (snapshot) => {
+        setLoading(false);
+        const data = snapshot.val();
+        if (data && typeof data === 'object') {
+          const allList: Review[] = Object.keys(data).map((k) => ({
+            ...data[k],
+            id: k,
+          }));
 
-  const fetchReviews = async (isLoadMore = false, rating: number | null = filterRating) => {
-    try {
-      if (!isLoadMore) setLoading(true);
-      let q;
-      if (rating) {
-        q = query(
-          collection(firestore, 'reviews'),
-          where('status', '==', 'approved'),
-          where('rating', '==', rating),
-          orderBy('createdAt', 'desc'),
-          limit(10)
-        );
-      } else {
-        q = query(
-          collection(firestore, 'reviews'),
-          where('status', '==', 'approved'),
-          orderBy('createdAt', 'desc'),
-          limit(10)
-        );
-      }
+          // Calculate stats for approved reviews
+          const approved = allList.filter((r) => r.status === 'approved');
+          const dist: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+          let sum = 0;
+          approved.forEach((r) => {
+            const star = Math.min(5, Math.max(1, Math.round(r.rating || 5)));
+            dist[star] = (dist[star] || 0) + 1;
+            sum += Number(r.rating) || 5;
+          });
 
-      if (isLoadMore && lastDoc) {
-        q = query(q, startAfter(lastDoc));
-      }
+          setTotalCount(approved.length);
+          setAvgRating(approved.length > 0 ? sum / approved.length : 5.0);
+          setStarDist(dist);
 
-      const snapshot = await getDocs(q);
-      const docs = snapshot.docs.map(d => ({ ...(d.data() as any), id: d.id } as Review));
-      
-      if (docs.length < 10) {
-        setHasMore(false);
-      } else {
-        setHasMore(true);
-      }
-      
-      if (isLoadMore) {
-        setReviews(prev => [...prev, ...docs]);
-      } else {
-        setReviews(docs);
-      }
-      
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-    } catch (err) {
-      console.error("Error fetching reviews", err);
-    } finally {
+          // Find current user's review if logged in
+          if (user) {
+            const mine = allList.find((r) => r.userId === user.uid || r.id === user.uid);
+            if (mine) {
+              setMyReview(mine);
+              setRating(mine.rating || 5);
+              setReviewText(mine.text || '');
+            }
+          }
+
+          // Sort approved reviews by createdAt descending
+          const sorted = approved.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          setReviews(sorted);
+        } else {
+          setReviews([]);
+          setTotalCount(0);
+          setAvgRating(5.0);
+          setStarDist({ 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 });
+        }
+      }, (err) => {
+        console.warn("Reviews sync notice:", err);
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    } catch (e) {
       setLoading(false);
     }
-  };
-
-  const fetchMyReview = async () => {
-    if (!user) return;
-    try {
-      const d = await getDoc(doc(firestore, 'reviews', user.uid));
-      if (d.exists()) {
-        const r = d.data() as Review;
-        setMyReview(r);
-        setRating(r.rating);
-        setReviewText(r.text);
-      }
-    } catch(err) {}
-  };
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  useEffect(() => {
-    fetchReviews(false, filterRating);
-  }, [filterRating]);
-
-  useEffect(() => {
-    if (user) fetchMyReview();
   }, [user]);
 
   const handleSubmitReview = async () => {
@@ -138,28 +94,35 @@ export const ReviewsView: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      const newReview: Partial<Review> = {
+      const newReview: Review = {
+        id: user.uid,
         userId: user.uid,
-        userName: profile?.username || user.displayName || 'User',
+        userName: profile?.username || user.displayName || user.email?.split('@')[0] || 'User',
         userPhoto: profile?.photoURL || user.photoURL || '',
         rating,
         text: reviewText.trim(),
-        status: 'pending',
-        createdAt: myReview ? myReview.createdAt : Date.now(),
+        status: (user.email === 'gmrony135@gmail.com' || user.email === 'mailfactorybd@gmail.com') ? 'approved' : 'pending',
+        createdAt: myReview?.createdAt || Date.now(),
         updatedAt: Date.now(),
         isVerified: (profile?.total_submitted && profile.total_submitted > 0) ? true : false,
       };
 
-      await setDoc(doc(firestore, 'reviews', user.uid), newReview, { merge: true });
-      setMyReview({ ...myReview, ...newReview } as Review);
+      await set(ref(db, `reviews/${user.uid}`), newReview);
+      setMyReview(newReview);
       setIsModalOpen(false);
       hapticFeedback.success();
     } catch (err) {
-      console.error(err);
+      console.error("Submit review error:", err);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const filteredReviews = filterRating 
+    ? reviews.filter((r) => Math.round(r.rating) === filterRating)
+    : reviews;
+  const displayedReviews = filteredReviews.slice(0, displayCount);
+  const hasMore = displayedReviews.length < filteredReviews.length;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 pb-24 space-y-6 animate-in fade-in">
@@ -281,11 +244,11 @@ export const ReviewsView: React.FC = () => {
         
         {loading ? (
           <div className="text-center py-8 text-slate-400">Loading reviews...</div>
-        ) : reviews.length === 0 ? (
+        ) : displayedReviews.length === 0 ? (
           <div className="text-center py-8 text-slate-400 bg-white rounded-3xl border border-slate-200">No reviews yet. Be the first to review!</div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {reviews.map(r => (
+            {displayedReviews.map(r => (
               <div key={r.id} className="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-3">
@@ -318,10 +281,10 @@ export const ReviewsView: React.FC = () => {
           </div>
         )}
         
-        {hasMore && !loading && reviews.length > 0 && (
+        {hasMore && !loading && displayedReviews.length > 0 && (
           <div className="text-center pt-4">
             <button 
-              onClick={() => fetchReviews(true)}
+              onClick={() => setDisplayCount((prev) => prev + 10)}
               className="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm shadow-sm hover:bg-slate-50 transition-all inline-flex items-center gap-2"
             >
               Load More <ChevronDown className="w-4 h-4" />
@@ -375,3 +338,4 @@ export const ReviewsView: React.FC = () => {
     </div>
   );
 };
+

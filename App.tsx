@@ -12,6 +12,7 @@ import { PrivacyView } from './PrivacyView';
 import { AboutView } from './AboutView';
 import { ReviewsView } from './ReviewsView';
 import { AdminReviewsView } from './AdminReviewsView';
+import { AdminTopSellersView } from './AdminTopSellersView';
 import { LiveChatDrawer } from './LiveChatDrawer';
 import { NotificationDrawer } from './NotificationDrawer';
 import { AuthModal } from './AuthModal';
@@ -66,6 +67,7 @@ const MainLayout: React.FC = () => {
         {activeTab === 'withdraw' && <WithdrawView />}
         {activeTab === 'reviews' && <ReviewsView />}
         {activeTab === 'admin_reviews' && <AdminReviewsView />}
+        {activeTab === 'admin_top_sellers' && <AdminTopSellersView />}
       </main>
 
       {/* Floating Action Buttons */}

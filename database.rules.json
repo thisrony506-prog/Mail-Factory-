@@ -62,6 +62,16 @@
         ".read": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')",
         ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
       }
+    },
+    "reviews": {
+      ".read": true,
+      "$uid": {
+        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+      }
+    },
+    "review_stats": {
+      ".read": true,
+      ".write": "auth != null"
     }
   }
 }
