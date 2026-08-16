@@ -14,6 +14,8 @@ import {
   orderByChild,
   equalTo,
   onChildAdded,
+  goOnline,
+  goOffline,
   User,
 } from './firebase';
 import {
@@ -284,52 +286,85 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  // Manage connection on visibility change to prevent "Database is closing/hidden" errors
+  useEffect(() => {
+    const handleVisibility = () => {
+      try {
+        if (document.visibilityState === 'visible') {
+          goOnline(db);
+        }
+      } catch (e) {
+        console.warn('goOnline recovery catch:', e);
+      }
+    };
+    const handleOnline = () => {
+      try {
+        goOnline(db);
+      } catch (e) {
+        console.warn('goOnline network catch:', e);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('online', handleOnline);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
+
   // Sync Global Settings
   useEffect(() => {
     try {
       const settingsRef = ref(db, 'settings');
-      const unsubscribe = onValue(settingsRef, (snap) => {
-        if (snap.exists()) {
-          const val = snap.val();
-          if (val.review_shifts) setReviewShifts(val.review_shifts);
-          const pMethods = val.payment_methods;
-          if (pMethods && typeof pMethods === 'object') {
-            // Force 6% fee globally on all loaded payment methods
-            Object.keys(pMethods).forEach((k) => {
-              if (pMethods[k]) {
-                pMethods[k].feePercent = 6;
-              }
-            });
-            setPaymentMethods(pMethods);
-          } else {
-            setPaymentMethods(DEFAULT_PAYMENT_METHODS);
-          }
-          if (val.maintenance_mode !== undefined) setMaintenanceMode(Boolean(val.maintenance_mode));
-          if (val.withdraw_disabled !== undefined) setIsWithdrawDisabled(Boolean(val.withdraw_disabled));
-          if (val.min_withdraw !== undefined) setMinWithdraw(Number(val.min_withdraw) || 100);
-          if (val.commission_percent !== undefined) setCommissionPercent(Number(val.commission_percent) || 10);
-          if (val.signup_bonus_user !== undefined) setSignupBonusUser(Number(val.signup_bonus_user) || 5);
-          if (val.signup_bonus_referrer !== undefined) setSignupBonusReferrer(Number(val.signup_bonus_referrer) || 5);
-          if (val.levels) {
-            const parsedLevels: LevelConfig[] = [];
-            Object.keys(val.levels).forEach((k) => {
-              const item = val.levels[k];
-              parsedLevels.push({
-                level: Number(k),
-                approved: Number(item.req) || 0,
-                rate: Number(item.new_rate) || 10,
-                old_rate: Number(item.old_rate) || 8,
-                title: item.title || `Level ${k} VIP`,
-                perkDescription: item.desc || `Rate: ৳${item.new_rate || 10}/Gmail`,
+      const unsubscribe = onValue(
+        settingsRef,
+        (snap) => {
+          if (snap.exists()) {
+            const val = snap.val();
+            if (val.review_shifts) setReviewShifts(val.review_shifts);
+            const pMethods = val.payment_methods;
+            if (pMethods && typeof pMethods === 'object') {
+              // Force 6% fee globally on all loaded payment methods
+              Object.keys(pMethods).forEach((k) => {
+                if (pMethods[k]) {
+                  pMethods[k].feePercent = 6;
+                }
               });
-            });
-            if (parsedLevels.length > 0) {
-              parsedLevels.sort((a, b) => a.approved - b.approved);
-              setLevels(parsedLevels);
+              setPaymentMethods(pMethods);
+            } else {
+              setPaymentMethods(DEFAULT_PAYMENT_METHODS);
+            }
+            if (val.maintenance_mode !== undefined) setMaintenanceMode(Boolean(val.maintenance_mode));
+            if (val.withdraw_disabled !== undefined) setIsWithdrawDisabled(Boolean(val.withdraw_disabled));
+            if (val.min_withdraw !== undefined) setMinWithdraw(Number(val.min_withdraw) || 100);
+            if (val.commission_percent !== undefined) setCommissionPercent(Number(val.commission_percent) || 10);
+            if (val.signup_bonus_user !== undefined) setSignupBonusUser(Number(val.signup_bonus_user) || 5);
+            if (val.signup_bonus_referrer !== undefined) setSignupBonusReferrer(Number(val.signup_bonus_referrer) || 5);
+            if (val.levels) {
+              const parsedLevels: LevelConfig[] = [];
+              Object.keys(val.levels).forEach((k) => {
+                const item = val.levels[k];
+                parsedLevels.push({
+                  level: Number(k),
+                  approved: Number(item.req) || 0,
+                  rate: Number(item.new_rate) || 10,
+                  old_rate: Number(item.old_rate) || 8,
+                  title: item.title || `Level ${k} VIP`,
+                  perkDescription: item.desc || `Rate: ৳${item.new_rate || 10}/Gmail`,
+                });
+              });
+              if (parsedLevels.length > 0) {
+                parsedLevels.sort((a, b) => a.approved - b.approved);
+                setLevels(parsedLevels);
+              }
             }
           }
+        },
+        (err) => {
+          console.warn('Settings listener connection notice:', err);
         }
-      });
+      );
       return () => unsubscribe();
     } catch (e) {
       console.warn('Settings listener error:', e);
@@ -340,40 +375,46 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     try {
       const topSellersRef = ref(db, 'top_sellers');
-      const unsubscribe = onValue(topSellersRef, (snap) => {
-        if (snap.exists()) {
-          const val = snap.val();
-          let list: TopSellerItem[] = [];
-          if (Array.isArray(val)) {
-            list = val.filter(Boolean);
-          } else if (val && typeof val === 'object') {
-            list = Object.keys(val).map((k) => ({ ...val[k], uid: val[k].uid || k }));
+      const unsubscribe = onValue(
+        topSellersRef,
+        (snap) => {
+          if (snap.exists()) {
+            const val = snap.val();
+            let list: TopSellerItem[] = [];
+            if (Array.isArray(val)) {
+              list = val.filter(Boolean);
+            } else if (val && typeof val === 'object') {
+              list = Object.keys(val).map((k) => ({ ...val[k], uid: val[k].uid || k }));
+            }
+
+            // Filter out any fake demo sellers (such as seller_1, seller_2, etc.)
+            const realList: TopSellerItem[] = list
+              .filter((s) => s && !s.uid?.startsWith('seller_') && s.username !== 'Tanvir Hossain' && s.username !== 'Shakil Ahmed')
+              .map((s, idx) => ({
+                uid: s.uid || `user_${idx + 1}`,
+                username: s.username || (s.email ? s.email.split('@')[0] : `Seller ${idx + 1}`),
+                email: s.email || '',
+                photoURL: s.photoURL || '',
+                totalEarnings: Number(s.totalEarnings) || Number(s.balance) || 0,
+                balance: Number(s.balance) || 0,
+                manual_approved_count: Number(s.manual_approved_count) || Number(s.total_submitted) || 0,
+                total_submitted: Number(s.total_submitted) || 0,
+                badge: s.badge || (idx === 0 ? 'VIP Champion' : idx < 3 ? 'Diamond VIP' : 'Gold Partner'),
+                rank: s.rank || idx + 1,
+              }));
+
+            setTopSellers(realList);
+            try {
+              localStorage.setItem('mf_top_sellers_list', JSON.stringify(realList));
+            } catch {}
+          } else {
+            setTopSellers([]);
           }
-
-          // Filter out any fake demo sellers (such as seller_1, seller_2, etc.)
-          const realList: TopSellerItem[] = list
-            .filter((s) => s && !s.uid?.startsWith('seller_') && s.username !== 'Tanvir Hossain' && s.username !== 'Shakil Ahmed')
-            .map((s, idx) => ({
-              uid: s.uid || `user_${idx + 1}`,
-              username: s.username || (s.email ? s.email.split('@')[0] : `Seller ${idx + 1}`),
-              email: s.email || '',
-              photoURL: s.photoURL || '',
-              totalEarnings: Number(s.totalEarnings) || Number(s.balance) || 0,
-              balance: Number(s.balance) || 0,
-              manual_approved_count: Number(s.manual_approved_count) || Number(s.total_submitted) || 0,
-              total_submitted: Number(s.total_submitted) || 0,
-              badge: s.badge || (idx === 0 ? 'VIP Champion' : idx < 3 ? 'Diamond VIP' : 'Gold Partner'),
-              rank: s.rank || idx + 1,
-            }));
-
-          setTopSellers(realList);
-          try {
-            localStorage.setItem('mf_top_sellers_list', JSON.stringify(realList));
-          } catch {}
-        } else {
-          setTopSellers([]);
+        },
+        (err) => {
+          console.warn('top_sellers connection notice:', err);
         }
-      });
+      );
       return () => unsubscribe();
     } catch (e) {
       console.warn('top_sellers listener error:', e);
@@ -386,32 +427,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user) return;
     try {
       const usersRef = ref(db, 'users');
-      const unsubscribe = onValue(usersRef, (snap) => {
-        if (snap.exists()) {
-          const list: UserProfile[] = [];
-          snap.forEach((child) => {
-            const u = child.val();
-            if (u && typeof u === 'object') {
-              u.uid = child.key;
-              if (!u.username && u.email) {
-                u.username = u.email.split('@')[0];
+      const unsubscribe = onValue(
+        usersRef,
+        (snap) => {
+          if (snap.exists()) {
+            const list: UserProfile[] = [];
+            snap.forEach((child) => {
+              const u = child.val();
+              if (u && typeof u === 'object') {
+                u.uid = child.key;
+                if (!u.username && u.email) {
+                  u.username = u.email.split('@')[0];
+                }
+                list.push(u);
               }
-              list.push(u);
-            }
-          });
-          if (list.length > 0) {
-            const sorted = [...list].sort((a, b) => {
-              const earnA = Number(a.totalEarnings) || (Number(a.balance || 0) + Number(a.total_withdrawn || 0)) || Number(a.balance || 0);
-              const earnB = Number(b.totalEarnings) || (Number(b.balance || 0) + Number(b.total_withdrawn || 0)) || Number(b.balance || 0);
-              return earnB - earnA;
             });
-            setAllUsers(sorted);
-            try {
-              localStorage.setItem('mf_real_top_sellers', JSON.stringify(sorted));
-            } catch {}
+            if (list.length > 0) {
+              const sorted = [...list].sort((a, b) => {
+                const earnA = Number(a.totalEarnings) || (Number(a.balance || 0) + Number(a.total_withdrawn || 0)) || Number(a.balance || 0);
+                const earnB = Number(b.totalEarnings) || (Number(b.balance || 0) + Number(b.total_withdrawn || 0)) || Number(b.balance || 0);
+                return earnB - earnA;
+              });
+              setAllUsers(sorted);
+              try {
+                localStorage.setItem('mf_real_top_sellers', JSON.stringify(sorted));
+              } catch {}
+            }
           }
+        },
+        (err) => {
+          console.warn('Users connection notice:', err);
         }
-      });
+      );
       return () => unsubscribe();
     } catch (e) {
       console.warn('Users listener error:', e);
@@ -430,80 +477,110 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             currUser.email && (currUser.email === 'gmrony135@gmail.com' || currUser.email === 'mailfactorybd@gmail.com')
           );
           
-          const unsubNotifs = onValue(notifsRef, (snap) => {
-            if (snap.exists()) {
-              const data = snap.val();
-              const fbNotifs = Object.entries(data).map(([key, val]) => ({
-                ...(val as any),
-                id: key,
-              }));
-              
-              setNotifications(prev => {
-                const existingIds = new Set(prev.map(n => n.id));
-                const newNotifs = fbNotifs.filter(n => !existingIds.has(n.id));
-                if (newNotifs.length > 0) {
-                  const updated = [...newNotifs, ...prev].sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
-                  localStorage.setItem('mf_notifications_v2', JSON.stringify(updated));
-                  return updated;
-                }
-                return prev;
-              });
+          const unsubNotifs = onValue(
+            notifsRef,
+            (snap) => {
+              if (snap.exists()) {
+                const data = snap.val();
+                const fbNotifs = Object.entries(data).map(([key, val]) => ({
+                  ...(val as any),
+                  id: key,
+                }));
+                
+                setNotifications(prev => {
+                  const existingIds = new Set(prev.map(n => n.id));
+                  const newNotifs = fbNotifs.filter(n => !existingIds.has(n.id));
+                  if (newNotifs.length > 0) {
+                    const updated = [...newNotifs, ...prev].sort((a, b) => b.timestamp - a.timestamp).slice(0, 50);
+                    localStorage.setItem('mf_notifications_v2', JSON.stringify(updated));
+                    return updated;
+                  }
+                  return prev;
+                });
+              }
+            },
+            (err) => {
+              console.warn('Notifs connection notice:', err);
             }
-          });
+          );
 
-          onValue(userRef, (snap) => {
-            if (snap.exists()) {
-              const data = snap.val() as UserProfile;
-              data.uid = currUser.uid;
-              setProfile(data);
+          onValue(
+            userRef,
+            (snap) => {
+              if (snap.exists()) {
+                const data = snap.val() as UserProfile;
+                data.uid = currUser.uid;
+                setProfile(data);
+              }
+            },
+            (err) => {
+              console.warn('UserRef connection notice:', err);
             }
-          });
+          );
 
           // Fetch user submissions (Admins listen to master submissions; regular users listen to private user_submissions)
           const subRef = isAdminUser ? ref(db, 'submissions') : ref(db, `user_submissions/${currUser.uid}`);
-          onValue(subRef, (snap) => {
-            const mySubs: Submission[] = [];
-            if (snap.exists()) {
-              snap.forEach((c) => {
-                const sub = c.val() as Submission;
-                if (isAdminUser || sub.userId === currUser.uid) {
-                  sub.key = c.key;
-                  mySubs.push(sub);
-                }
-              });
-              mySubs.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+          onValue(
+            subRef,
+            (snap) => {
+              const mySubs: Submission[] = [];
+              if (snap.exists()) {
+                snap.forEach((c) => {
+                  const sub = c.val() as Submission;
+                  if (isAdminUser || sub.userId === currUser.uid) {
+                    sub.key = c.key;
+                    mySubs.push(sub);
+                  }
+                });
+                mySubs.sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+              }
+              setSubmissions(mySubs);
+            },
+            (err) => {
+              console.warn('Submissions connection notice:', err);
             }
-            setSubmissions(mySubs);
-          });
+          );
 
           // Fetch user withdrawals (Admins listen to master requests; regular users listen to private user_withdrawals)
           const wdRef = isAdminUser ? ref(db, 'withdraw_requests') : ref(db, `user_withdrawals/${currUser.uid}`);
-          onValue(wdRef, (snap) => {
-            const myWds: WithdrawRequest[] = [];
-            if (snap.exists()) {
-              snap.forEach((c) => {
-                const wd = c.val() as WithdrawRequest;
-                if (isAdminUser || wd.userId === currUser.uid) {
-                  wd.key = c.key;
-                  myWds.push(wd);
-                }
-              });
-              myWds.sort((a, b) => (b.requestedAt || 0) - (a.requestedAt || 0));
+          onValue(
+            wdRef,
+            (snap) => {
+              const myWds: WithdrawRequest[] = [];
+              if (snap.exists()) {
+                snap.forEach((c) => {
+                  const wd = c.val() as WithdrawRequest;
+                  if (isAdminUser || wd.userId === currUser.uid) {
+                    wd.key = c.key;
+                    myWds.push(wd);
+                  }
+                });
+                myWds.sort((a, b) => (b.requestedAt || 0) - (a.requestedAt || 0));
+              }
+              setWithdrawRequests(myWds);
+            },
+            (err) => {
+              console.warn('Withdrawals connection notice:', err);
             }
-            setWithdrawRequests(myWds);
-          });
+          );
 
           // Listen for support chat messages
           const chatRef = ref(db, `support_chats/${currUser.uid}`);
-          onChildAdded(chatRef, (snapshot) => {
-            const msg = snapshot.val();
-            if (msg) {
-              setChatMessages((prev) => {
-                if (prev.some((m) => m.id === snapshot.key)) return prev;
-                return [...prev, { id: snapshot.key || String(Date.now()), ...msg }];
-              });
+          onChildAdded(
+            chatRef,
+            (snapshot) => {
+              const msg = snapshot.val();
+              if (msg) {
+                setChatMessages((prev) => {
+                  if (prev.some((m) => m.id === snapshot.key)) return prev;
+                  return [...prev, { id: snapshot.key || String(Date.now()), ...msg }];
+                });
+              }
+            },
+            (err) => {
+              console.warn('Chat connection notice:', err);
             }
-          });
+          );
         } catch (e) {
           console.warn('Profile sync error:', e);
         }

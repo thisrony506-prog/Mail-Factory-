@@ -29,6 +29,8 @@ import {
   equalTo,
   remove,
   onChildAdded,
+  goOnline,
+  goOffline,
   Database
 } from 'firebase/database';
 
@@ -70,7 +72,9 @@ export {
   orderByChild,
   equalTo,
   remove,
-  onChildAdded
+  onChildAdded,
+  goOnline,
+  goOffline
 };
 
 export type { User };

@@ -208,6 +208,28 @@ export const SellersView: React.FC = () => {
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
           </button>
         </div>
+
+        {/* Global Stats Counter */}
+        {displaySellers.length > 0 && (
+          <div className="grid grid-cols-3 gap-2 mt-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs">
+            <div className="text-center border-r border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 block uppercase">টপ সেলার</span>
+              <span className="text-sm font-black text-slate-800 font-mono">{displaySellers.length} জন</span>
+            </div>
+            <div className="text-center border-r border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 block uppercase">মোট পেমেন্ট</span>
+              <span className="text-sm font-black text-emerald-600 font-mono">
+                ৳{displaySellers.reduce((acc, s) => acc + getEarning(s), 0).toLocaleString('en-US')}
+              </span>
+            </div>
+            <div className="text-center">
+              <span className="text-[10px] font-bold text-slate-400 block uppercase">অ্যাপ্রুভড জিমেইল</span>
+              <span className="text-sm font-black text-indigo-600 font-mono">
+                {displaySellers.reduce((acc, s) => acc + getApprovedCount(s), 0).toLocaleString('en-US')} টি
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* When no top sellers configured yet */}
