@@ -65,7 +65,7 @@ export const ExchangeView: React.FC = () => {
   const handleRemoveRow = (id: string) => {
     hapticFeedback.light();
     if (rows.length <= 2) {
-      setErrorMessage(language === 'bn' ? 'কমপক্ষে ২টি জিমেইল সাবমিট করতে হবে।' : 'Minimum 2 Gmails required.');
+      setErrorMessage(t.minTwoGmails);
       return;
     }
     setRows((prev) => prev.filter((r) => r.id !== id));
@@ -96,7 +96,7 @@ export const ExchangeView: React.FC = () => {
 
     if (rows.length < 2) {
       hapticFeedback.error();
-      setErrorMessage(language === 'bn' ? 'কমপক্ষে ২টি জিমেইল প্রয়োজন।' : 'Minimum 2 Gmail accounts required.');
+      setErrorMessage(t.minTwoGmails);
       return;
     }
 
@@ -210,7 +210,7 @@ export const ExchangeView: React.FC = () => {
           className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-indigo-600 transition-colors bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>{language === 'bn' ? 'ফিরে যান' : 'Back'}</span>
+          <span>{t.back}</span>
         </button>
 
         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-black">
@@ -227,12 +227,10 @@ export const ExchangeView: React.FC = () => {
               <CheckCircle className="w-7 h-7 text-white" />
             </div>
             <h3 className="text-xl font-black">
-              {language === 'bn' ? 'সাবমিশন সফল হয়েছে! 🎉' : 'Submission Successful! 🎉'}
+              {t.submissionSuccess}
             </h3>
             <p className="text-xs text-emerald-100 mt-1 max-w-md mx-auto">
-              {language === 'bn'
-                ? `${successData.count} টি জিমেইল সাফল্যের সাথে সাবমিট করা হয়েছে। মোট ৳${successData.totalAmount} আপনার হোল্ড ব্যালেন্সে যোগ হয়েছে।`
-                : `${successData.count} Gmails successfully submitted. ৳${successData.totalAmount} added to your Hold balance.`}
+              {t.submissionSuccessDesc}
             </p>
             <div className="mt-4 flex items-center justify-center gap-2">
               <button
@@ -242,13 +240,13 @@ export const ExchangeView: React.FC = () => {
                 }}
                 className="px-4 py-2 rounded-xl bg-white text-emerald-700 text-xs font-extrabold shadow hover:bg-emerald-50 transition-all active:scale-95"
               >
-                {language === 'bn' ? 'হিস্ট্রি চেক করুন' : 'View History'}
+                {t.viewHistory}
               </button>
               <button
                 onClick={() => setSuccessData(null)}
                 className="px-4 py-2 rounded-xl bg-emerald-700/60 hover:bg-emerald-700 text-white text-xs font-bold transition-all"
               >
-                {language === 'bn' ? 'আরও জমা দিন' : 'Submit More'}
+                {t.submitMore}
               </button>
             </div>
           </div>
@@ -371,7 +369,19 @@ export const ExchangeView: React.FC = () => {
                 className="w-full py-3 rounded-md bg-[#e5e7eb] hover:bg-[#d1d5db] text-[#374151] text-[15px] font-bold flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
               >
                 <Plus className="w-5 h-5" />
-                <span>Add More</span>
+                <span>
+                  {language === 'bn'
+                    ? 'আরও যোগ করুন'
+                    : language === 'ar'
+                    ? 'إضافة المزيد'
+                    : language === 'hi'
+                    ? 'और जोड़ें'
+                    : language === 'es'
+                    ? 'Añadir más'
+                    : language === 'fr'
+                    ? 'Ajouter plus'
+                    : 'Add More'}
+                </span>
               </button>
 
               <button
@@ -388,9 +398,27 @@ export const ExchangeView: React.FC = () => {
               >
                 <span>
                   {isSubmitting
-                    ? language === 'bn' ? 'প্রসেস হচ্ছে...' : 'Processing...'
+                    ? language === 'bn'
+                      ? 'প্রসেস হচ্ছে...'
+                      : language === 'ar'
+                      ? 'جاري المعالجة...'
+                      : language === 'hi'
+                      ? 'प्रसंस्करण...'
+                      : 'Processing...'
                     : maintenanceMode
-                    ? language === 'bn' ? 'সাময়িক স্থগিত' : 'Maintenance Mode'
+                    ? language === 'bn'
+                      ? 'সাময়িক স্থগিত'
+                      : 'Maintenance Mode'
+                    : language === 'bn'
+                    ? `${rows.length} টি অ্যাকাউন্ট জমা দিন`
+                    : language === 'ar'
+                    ? `إرسال ${rows.length} حساب`
+                    : language === 'hi'
+                    ? `${rows.length} खाते जमा करें`
+                    : language === 'es'
+                    ? `Enviar ${rows.length} cuenta(s)`
+                    : language === 'fr'
+                    ? `Soumettre ${rows.length} compte(s)`
                     : `Submit ${rows.length} Account(s)`}
                 </span>
               </button>
@@ -399,7 +427,18 @@ export const ExchangeView: React.FC = () => {
             {/* Minimal Estimated Earnings */}
             <div className="text-center pt-2 pb-4">
               <p className="text-xs text-slate-500 font-medium">
-                Estimated Total: <span className="font-bold text-slate-700">৳{estimatedTotal}</span>
+                {language === 'bn'
+                  ? 'আনুমানিক মোট:'
+                  : language === 'ar'
+                  ? 'المجموع التقديري:'
+                  : language === 'hi'
+                  ? 'अनुमानित कुल:'
+                  : language === 'es'
+                  ? 'Total estimado:'
+                  : language === 'fr'
+                  ? 'Total estimé:'
+                  : 'Estimated Total:'}{' '}
+                <span className="font-bold text-slate-700">৳{estimatedTotal}</span>
               </p>
             </div>
           </div>

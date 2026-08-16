@@ -103,7 +103,7 @@ export const ReviewShifts: React.FC = () => {
 
             {/* Title */}
             <h4 className="text-[13px] sm:text-[15px] font-extrabold text-slate-800 mb-0.5 whitespace-nowrap">
-              {isFirst ? 'রিসিভ করা হবে' : 'রিপোর্ট দেওয়া হবে'}
+              {isFirst ? t.shiftReceive : t.shiftReport}
             </h4>
             
             {/* Date */}

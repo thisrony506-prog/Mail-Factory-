@@ -9,7 +9,7 @@ import { Review } from './types';
 import { hapticFeedback } from './haptics';
 
 export const ReviewsView: React.FC = () => {
-  const { user, profile, language, setAuthModalOpen, addNotification } = useApp();
+  const { user, profile, language, setAuthModalOpen, addNotification, withdrawRequests } = useApp();
   const t = translations[language];
 
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -111,7 +111,10 @@ export const ReviewsView: React.FC = () => {
         status: 'approved',
         createdAt: myReview?.createdAt || Date.now(),
         updatedAt: Date.now(),
-        isVerified: Boolean(profile?.manual_approved_count && profile.manual_approved_count > 0),
+        isVerified: Boolean(
+          (profile?.total_withdrawn && profile.total_withdrawn > 0) ||
+          (withdrawRequests && withdrawRequests.some((w) => w.status === 'approved' || w.status === 'pending'))
+        ),
       };
 
       // Optimistically update state & local storage

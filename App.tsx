@@ -14,15 +14,14 @@ import { ReviewsView } from './ReviewsView';
 import { AdminReviewsView } from './AdminReviewsView';
 import { AdminTopSellersView } from './AdminTopSellersView';
 import { SettingsView } from './SettingsView';
+import { ChangePasswordView } from './ChangePasswordView';
+import { EditProfileView } from './EditProfileView';
 import { ReferralLeaderboard } from './ReferralLeaderboard';
 import { LiveChatDrawer } from './LiveChatDrawer';
 import { NotificationDrawer } from './NotificationDrawer';
-import { SettingsDrawer } from './SettingsDrawer';
 import { AuthModal } from './AuthModal';
 import { GuestLandingView } from './GuestLandingView';
 import {
-  EditProfileModal,
-  ChangePasswordModal,
   FAQModal,
   ContactModal,
   RateAppModal,
@@ -35,7 +34,9 @@ const MainLayout: React.FC = () => {
   const {
     user,
     loading,
+    language,
     activeTab,
+    setActiveTab,
     unreadNotifsCount,
     setChatDrawerOpen,
     setNotifDrawerOpen,
@@ -44,8 +45,6 @@ const MainLayout: React.FC = () => {
   } = useApp();
   const { showIOSGuide, closeIOSGuide } = usePWAInstall();
 
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false);
-  const [isChangePassOpen, setIsChangePassOpen] = useState<boolean>(false);
   const [isFAQOpen, setIsFAQOpen] = useState<boolean>(false);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
 
@@ -54,7 +53,7 @@ const MainLayout: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white space-y-3">
         <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-        <p className="text-xs font-bold text-slate-400">Mail Factory লোড হচ্ছে...</p>
+        <p className="text-xs font-bold text-slate-400">{language === 'bn' ? 'লোড হচ্ছে...' : 'Loading...'}</p>
       </div>
     );
   }
@@ -73,10 +72,15 @@ const MainLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
       {/* Top Navbar */}
-      <Navbar />
+      <Navbar
+        onOpenEditProfile={() => setActiveTab('edit_profile')}
+        onOpenChangePass={() => setActiveTab('change_password')}
+        onOpenFAQ={() => setIsFAQOpen(true)}
+        onOpenContact={() => setIsContactOpen(true)}
+      />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full pb-6">
         {activeTab === 'home' && <HomeView />}
         {activeTab === 'exchange' && <ExchangeView />}
         {activeTab === 'history' && <HistoryView />}
@@ -85,8 +89,8 @@ const MainLayout: React.FC = () => {
         {activeTab === 'about' && <AboutView />}
         {activeTab === 'profile' && (
           <ProfileView
-            onOpenEditProfile={() => setIsEditProfileOpen(true)}
-            onOpenChangePass={() => setIsChangePassOpen(true)}
+            onOpenEditProfile={() => setActiveTab('edit_profile')}
+            onOpenChangePass={() => setActiveTab('change_password')}
             onOpenFAQ={() => setIsFAQOpen(true)}
             onOpenContact={() => setIsContactOpen(true)}
           />
@@ -96,10 +100,12 @@ const MainLayout: React.FC = () => {
         {activeTab === 'admin_reviews' && <AdminReviewsView />}
         {activeTab === 'admin_top_sellers' && <AdminTopSellersView />}
         {activeTab === 'referral_leaderboard' && <ReferralLeaderboard />}
+        {activeTab === 'change_password' && <ChangePasswordView />}
+        {activeTab === 'edit_profile' && <EditProfileView />}
         {activeTab === 'settings' && (
           <SettingsView
-            onOpenEditProfile={() => setIsEditProfileOpen(true)}
-            onOpenChangePass={() => setIsChangePassOpen(true)}
+            onOpenEditProfile={() => setActiveTab('edit_profile')}
+            onOpenChangePass={() => setActiveTab('change_password')}
             onOpenFAQ={() => setIsFAQOpen(true)}
             onOpenContact={() => setIsContactOpen(true)}
           />
@@ -107,7 +113,7 @@ const MainLayout: React.FC = () => {
       </main>
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-20 right-4 z-30 flex flex-col gap-2.5">
+      <div className="fixed bottom-6 right-4 z-30 flex flex-col gap-2.5">
         <button
           onClick={() => setChatDrawerOpen(true)}
           className="w-12 h-12 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
@@ -131,28 +137,11 @@ const MainLayout: React.FC = () => {
       <AuthModal />
       <LiveChatDrawer />
       <NotificationDrawer />
-      <SettingsDrawer
-        onOpenEditProfile={() => setIsEditProfileOpen(true)}
-        onOpenChangePass={() => setIsChangePassOpen(true)}
-        onOpenFAQ={() => setIsFAQOpen(true)}
-        onOpenContact={() => setIsContactOpen(true)}
-      />
       <IOSInstallGuideModal isOpen={showIOSGuide} onClose={closeIOSGuide} />
 
-      <EditProfileModal
-        isOpen={isEditProfileOpen}
-        onClose={() => setIsEditProfileOpen(false)}
-      />
-      <ChangePasswordModal
-        isOpen={isChangePassOpen}
-        onClose={() => setIsChangePassOpen(false)}
-      />
       <FAQModal isOpen={isFAQOpen} onClose={() => setIsFAQOpen(false)} />
       <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
       <RateAppModal isOpen={isRateModalOpen} onClose={() => setRateModalOpen(false)} />
-
-      {/* Bottom Nav */}
-      <BottomNav />
     </div>
   );
 };

@@ -42,28 +42,28 @@ export const HistoryView: React.FC = () => {
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full">
             <CheckCircle className="w-3 h-3" />
-            <span>{language === 'bn' ? 'অনুমোদিত' : 'Approved'}</span>
+            <span>{t.approved}</span>
           </span>
         );
       case 'rejected':
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-100 px-2.5 py-0.5 rounded-full">
             <XCircle className="w-3 h-3" />
-            <span>{language === 'bn' ? 'বাতিল' : 'Rejected'}</span>
+            <span>{t.rejected}</span>
           </span>
         );
       case 'checking':
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 bg-sky-100 px-2.5 py-0.5 rounded-full">
             <Clock className="w-3 h-3 animate-spin" />
-            <span>{language === 'bn' ? 'যাচাই চলছে' : 'Checking'}</span>
+            <span>{t.auditProcessing}</span>
           </span>
         );
       default:
         return (
           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full">
             <Clock className="w-3 h-3" />
-            <span>{language === 'bn' ? 'পেন্ডিং' : 'Pending'}</span>
+            <span>{t.pending}</span>
           </span>
         );
     }
@@ -121,7 +121,7 @@ export const HistoryView: React.FC = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={language === 'bn' ? 'ইমেইল দিয়ে খুঁজুন...' : 'Search by email...'}
+                placeholder={t.searchByEmail}
                 className="w-full pl-9 pr-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
               />
             </div>
@@ -131,10 +131,10 @@ export const HistoryView: React.FC = () => {
               onChange={(e) => setFilterStatus(e.target.value)}
               className="rounded-xl bg-white border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm"
             >
-              <option value="all">{language === 'bn' ? 'সকল' : 'All'}</option>
-              <option value="pending">{language === 'bn' ? 'পেন্ডিং' : 'Pending'}</option>
-              <option value="approved">{language === 'bn' ? 'অনুমোদিত' : 'Approved'}</option>
-              <option value="rejected">{language === 'bn' ? 'বাতিল' : 'Rejected'}</option>
+              <option value="all">{t.allReviews}</option>
+              <option value="pending">{t.pending}</option>
+              <option value="approved">{t.approved}</option>
+              <option value="rejected">{t.rejected}</option>
             </select>
           </div>
 
@@ -143,10 +143,10 @@ export const HistoryView: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">
               <Layers className="w-10 h-10 mx-auto mb-2 opacity-30 text-indigo-600" />
               <p className="text-xs font-bold text-slate-600">
-                {language === 'bn' ? 'কোনো সাবমিশন হিস্ট্রি পাওয়া যায়নি।' : 'No submissions found.'}
+                {t.noSubmissionHistory}
               </p>
               <p className="text-[11px] text-slate-400 mt-1">
-                {language === 'bn' ? 'জিমেইল এক্সচেঞ্জ শুরু করে আয় করুন।' : 'Start selling Gmail to see activity here.'}
+                {t.noSubmissionHistorySub}
               </p>
             </div>
           ) : (
@@ -171,7 +171,7 @@ export const HistoryView: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <span className="text-base font-black text-indigo-700">৳{sub.totalAmount}</span>
                         <span className="text-xs font-extrabold text-slate-600">
-                          ({sub.count || sub.gmails?.length || 0} {language === 'bn' ? 'টি' : 'Gmails'})
+                          ({sub.count || sub.gmails?.length || 0} Gmails)
                         </span>
                       </div>
                       <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
@@ -188,7 +188,7 @@ export const HistoryView: React.FC = () => {
                   {/* Expanded Individual Gmails list */}
                   <div className="mt-3 pt-3 border-t border-slate-100 space-y-1.5 animate-fade-in">
                     <div className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider">
-                      {language === 'bn' ? 'জিমেইল তালিকা ও স্ট্যাটাস:' : 'Gmail Accounts & Status:'}
+                      {t.gmailListStatus}
                     </div>
                     {sub.gmails?.map((item, gIdx) => (
                       <div
@@ -215,10 +215,10 @@ export const HistoryView: React.FC = () => {
           <div className="flex justify-between items-center bg-indigo-50/70 p-3 rounded-2xl border border-indigo-100">
             <div>
               <span className="text-xs font-bold text-indigo-950 block">
-                {language === 'bn' ? 'টাকা উত্তোলন করতে চান?' : 'Need to withdraw cash?'}
+                {t.needWithdrawCash}
               </span>
               <span className="text-[10px] text-indigo-600 font-medium">
-                {language === 'bn' ? 'bKash, Nagad, Rocket বা USDT তে তাৎক্ষণিক' : 'Fast payout to mobile wallet'}
+                {t.fastPayoutMobile}
               </span>
             </div>
             <button
@@ -233,7 +233,7 @@ export const HistoryView: React.FC = () => {
             <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400">
               <Wallet className="w-10 h-10 mx-auto mb-2 opacity-30 text-indigo-600" />
               <p className="text-xs font-bold text-slate-600">
-                {language === 'bn' ? 'কোনো উইথড্র হিস্ট্রি নেই।' : 'No withdrawal records yet.'}
+                {t.noWithdrawHistory}
               </p>
             </div>
           ) : (
@@ -287,10 +287,10 @@ export const HistoryView: React.FC = () => {
             <Sparkles className="w-5 h-5 text-amber-200" />
             <div>
               <h4 className="text-xs font-black">
-                {language === 'bn' ? 'লাইভ ট্রেন্ডিং পে-আউট ও এক্সচেঞ্জ' : 'Live Platform Payout Feed'}
+                {t.liveTrendingTitle}
               </h4>
               <p className="text-[10px] text-amber-100">
-                {language === 'bn' ? 'সক্রিয় ব্যবহারকারীদের সাম্প্রতিক আয়ের রেকর্ড' : 'Real-time verified community exchanges'}
+                {t.liveTrendingSub}
               </p>
             </div>
           </div>
@@ -325,7 +325,7 @@ export const HistoryView: React.FC = () => {
                   <span className="text-sm font-black text-indigo-700 block font-mono">
                     ৳{earn.toLocaleString('en-US')}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-medium">মোট উপার্জিত</span>
+                  <span className="text-[10px] text-slate-400 font-medium">{t.totalEarned}</span>
                 </div>
               </div>
             );

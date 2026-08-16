@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from './AppContext';
+import { translations } from './i18n';
 import { db } from './firebase';
 import { ref, onValue } from 'firebase/database';
 import { Star, ArrowRight, ShieldCheck, User } from 'lucide-react';
 import { Review } from './types';
 
 export const HomeReviewsPreview: React.FC = () => {
-  const { setActiveTab } = useApp();
+  const { setActiveTab, language } = useApp();
+  const t = translations[language];
   const [reviews, setReviews] = useState<Review[]>([]);
   const [avgRating, setAvgRating] = useState<number>(5.0);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -58,7 +60,7 @@ export const HomeReviewsPreview: React.FC = () => {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
-            Customer Reviews
+            {t.customerReviews}
           </h3>
           <div className="flex items-center gap-1.5 mt-1">
             <span className="text-xs font-black text-slate-800">{avgRating.toFixed(1)}</span>
@@ -74,7 +76,7 @@ export const HomeReviewsPreview: React.FC = () => {
           onClick={() => setActiveTab('reviews')}
           className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-0.5 bg-indigo-50 px-2.5 py-1.5 rounded-lg transition-colors"
         >
-          View All <ArrowRight className="w-3 h-3" />
+          {t.viewAll} <ArrowRight className="w-3 h-3" />
         </button>
       </div>
 

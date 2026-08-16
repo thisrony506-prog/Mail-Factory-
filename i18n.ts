@@ -16,7 +16,221 @@ export const LANGUAGES: LanguageOption[] = [
   { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
 ];
 
-export const translations = {
+export interface TranslationSchema {
+  appName: string;
+  slogan: string;
+  trustedSafe: string;
+  newGmail: string;
+  oldGmail: string;
+  startSelling: string;
+  startExchange: string;
+  activeBadge: string;
+  levelRateTitle: string;
+  chooseGmailType: string;
+  whyChooseUs: string;
+  fastPayment: string;
+  safeData: string;
+  support247: string;
+  enterDetails: string;
+  yourRate: string;
+  addAnother: string;
+  bulkPaste: string;
+  bulkPasteTitle: string;
+  estimatedEarnings: string;
+  confirmSubmit: string;
+  home: string;
+  history: string;
+  sellers: string;
+  profile: string;
+  submissions: string;
+  withdraws: string;
+  trending: string;
+  mainBalance: string;
+  holdBalance: string;
+  withdraw: string;
+  invite: string;
+  dailyStreak: string;
+  submissionStats: string;
+  total: string;
+  approved: string;
+  pending: string;
+  rejected: string;
+  inviteAndEarn: string;
+  commission: string;
+  totalRefers: string;
+  totalEarned: string;
+  overview: string;
+  myFriends: string;
+  copy: string;
+  shareReferral: string;
+  account: string;
+  editProfile: string;
+  notifications: string;
+  changePassword: string;
+  logoutAll: string;
+  support: string;
+  liveChat: string;
+  faq: string;
+  contactUs: string;
+  info: string;
+  privacyPolicy: string;
+  aboutUs: string;
+  dangerZone: string;
+  deleteAccount: string;
+  logout: string;
+  login: string;
+  register: string;
+  welcomeBack: string;
+  orWithEmail: string;
+  gmailAddress: string;
+  password: string;
+  confirmPassword: string;
+  fullName: string;
+  forgotPass: string;
+  noAccount: string;
+  haveAccount: string;
+  submitWithdraw: string;
+  minWithdrawLabel: string;
+  accountNumber: string;
+  amount: string;
+  selectPaymentMethod: string;
+  liveReviewShifts: string;
+  nextShiftIn: string;
+  copySuccess: string;
+  streakClaim: string;
+  streakClaimed: string;
+  selectLanguage: string;
+  languageTitle: string;
+  
+  // Extended UI Keys
+  homePage: string;
+  submissionHistory: string;
+  topSellersList: string;
+  myProfile: string;
+  back: string;
+  save: string;
+  saveChanges: string;
+  edit: string;
+  viewAll: string;
+  loading: string;
+  all: string;
+  search: string;
+  noData: string;
+  status: string;
+  checking: string;
+  date: string;
+  action: string;
+  adminPanel: string;
+  manageReviews: string;
+  topSellersConfig: string;
+  installApp: string;
+  minTwoGmails: string;
+  emailRequired: string;
+  passRequired: string;
+  invalidEmail: string;
+  submitting: string;
+  submissionSuccess: string;
+  submissionSuccessDesc: string;
+  viewHistory: string;
+  submitMore: string;
+  ratePerMail: string;
+  withdrawDisabledAlert: string;
+  insufficientBalance: string;
+  enterValidAmount: string;
+  withdrawSuccess: string;
+  withdrawSuccessDesc: string;
+  fee: string;
+  netPayable: string;
+  quickAdd: string;
+  allBalance: string;
+  vipLevelRewards: string;
+  earningsChart: string;
+  days7: string;
+  days30: string;
+  peakEarning: string;
+  totalPeriod: string;
+  currentLevelLabel: string;
+  nextLevelTarget: string;
+  approvedMailCount: string;
+  memberSinceLabel: string;
+  profileSettings: string;
+  securitySettings: string;
+  referralTitle: string;
+  referralSubtitle: string;
+  yourReferralLink: string;
+  shareWithFriends: string;
+  howItWorks: string;
+  customerReviews: string;
+  reviewsSubtitle: string;
+  writeReview: string;
+  rating: string;
+  yourComment: string;
+  submitReview: string;
+  allReviews: string;
+  verifiedSeller: string;
+  settings: string;
+  appPreferences: string;
+  notificationsSetting: string;
+  withdrawalAlerts: string;
+  submissionAlerts: string;
+  enterEmail: string;
+  enterPassword: string;
+  enterFullName: string;
+  enterPhone: string;
+  referralCodeOptional: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+  updatePassword: string;
+  passMismatch: string;
+  faqTitle: string;
+  contactTitle: string;
+  telegramSupport: string;
+  whatsappSupport: string;
+  emailSupport: string;
+  rateAppTitle: string;
+  rateAppSubtitle: string;
+  submitRating: string;
+  thankYou: string;
+  topSellersTitle: string;
+  topSellersDesc: string;
+  earnedTotal: string;
+  successfulSubmissions: string;
+  balanceConverter: string;
+  balanceConverterDesc: string;
+  perVerifiedAccount: string;
+  perAgedAccount: string;
+  startExchangeSubtitle: string;
+  shiftReceive: string;
+  shiftReport: string;
+  directWithdrawMethods: string;
+  holdBalanceNotice: string;
+  dailyStreakBonusSub: string;
+  streakBonusClaimedToday: string;
+  ratePerTask: string;
+  approvedJobsDone: string;
+  taskPayout: string;
+  auditProcessing: string;
+  fastTrack: string;
+  levelBadgePerk: string;
+  vipVerified: string;
+  workAnalyticsTitle: string;
+  workAnalyticsSub: string;
+  days: string;
+  peakSingleEarn: string;
+  earnedMoney: string;
+  needWithdrawCash: string;
+  fastPayoutMobile: string;
+  liveTrendingTitle: string;
+  liveTrendingSub: string;
+  gmailListStatus: string;
+  noSubmissionHistory: string;
+  noSubmissionHistorySub: string;
+  noWithdrawHistory: string;
+  searchByEmail: string;
+}
+
+export const translations: Record<Language, TranslationSchema> = {
   bn: {
     appName: "Mail Factory",
     slogan: "★ বিশ্বস্ত ও দ্রুত এক্সচেঞ্জ ★",
@@ -24,6 +238,7 @@ export const translations = {
     newGmail: "নতুন জিমেইল",
     oldGmail: "পুরাতন জিমেইল",
     startSelling: "জিমেইল বিক্রি শুরু করুন",
+    startExchange: "লেনদেন শুরু করুন",
     activeBadge: "সক্রিয়",
     levelRateTitle: "লেভেল রেট",
     chooseGmailType: "জিমেইল টাইপ নির্বাচন করুন",
@@ -35,6 +250,7 @@ export const translations = {
     yourRate: "আপনার লেভেল রেট:",
     addAnother: "আরেকটি যোগ করুন",
     bulkPaste: "একসাথে পেস্ট করুন",
+    bulkPasteTitle: "একসাথে অনেকগুলো পেস্ট করুন (Email:Password)",
     estimatedEarnings: "সম্ভাব্য মোট আয়",
     confirmSubmit: "কনফার্ম ও সাবমিট করুন",
     home: "হোম",
@@ -69,7 +285,7 @@ export const translations = {
     logoutAll: "সকল ডিভাইস থেকে লগআউট",
     support: "সাপোর্ট",
     liveChat: "লাইভ চ্যাট সাপোর্ট",
-    faq: "প্রশ্নোত্তর (FAQ)",
+    faq: "প্রশ্নোত্তর",
     contactUs: "যোগাযোগ",
     info: "তথ্য",
     privacyPolicy: "প্রাইভেসি পলিসি",
@@ -100,6 +316,133 @@ export const translations = {
     streakClaimed: "আজকের স্ট্রিক বোনাস গৃহীত!",
     selectLanguage: "ভাষা নির্বাচন করুন",
     languageTitle: "ভাষা এবং পছন্দসমূহ",
+
+    // Extended UI Keys
+    homePage: "হোম পেজ",
+    submissionHistory: "কাজের হিস্ট্রি",
+    topSellersList: "সেরা ১০ সেলারদের তালিকা",
+    myProfile: "মাই প্রোফাইল",
+    back: "ফিরে যান",
+    save: "সংরক্ষণ করুন",
+    saveChanges: "তথ্য সংরক্ষণ করুন",
+    edit: "এডিট",
+    viewAll: "সব দেখুন",
+    loading: "লোড হচ্ছে...",
+    all: "সকল",
+    search: "অনুসন্ধান করুন...",
+    noData: "কোনো ডাটা পাওয়া যায়নি",
+    status: "স্ট্যাটাস",
+    checking: "যাচাই চলছে",
+    date: "তারিখ",
+    action: "অ্যাকশন",
+    adminPanel: "এডমিন কন্ট্রোল",
+    manageReviews: "রিভিউ ম্যানেজমেন্ট",
+    topSellersConfig: "টপ সেলার কনফিগ",
+    installApp: "অ্যাপ ইনস্টল করুন",
+    minTwoGmails: "কমপক্ষে ২টি জিমেইল সাবমিট করতে হবে।",
+    emailRequired: "ইমেইল এড্রেস লিখুন",
+    passRequired: "পাসওয়ার্ড লিখুন",
+    invalidEmail: "সঠিক জিমেইল এড্রেস দিন (@gmail.com)",
+    submitting: "সাবমিট করা হচ্ছে...",
+    submissionSuccess: "সাবমিশন সফল হয়েছে! 🎉",
+    submissionSuccessDesc: "আপনার জিমেইল সফলভাবে সাবমিট করা হয়েছে। আমাদের রিভিউ টিম দ্রুত চেক করে ব্যালেন্স যোগ করে দেবে।",
+    viewHistory: "হিস্ট্রি চেক করুন",
+    submitMore: "আরও জমা দিন",
+    ratePerMail: "প্রতি অ্যাকাউন্টে পাবেন:",
+    withdrawDisabledAlert: "বর্তমানে উত্তোলন সাময়িক বন্ধ আছে।",
+    insufficientBalance: "পর্যাপ্ত ব্যালেন্স নেই",
+    enterValidAmount: "সঠিক টাকার পরিমাণ দিন",
+    withdrawSuccess: "উত্তোলন অনুরোধ সফল হয়েছে!",
+    withdrawSuccessDesc: "আপনার উত্তোলনের অনুরোধটি পর্যালোচনা করা হচ্ছে। শিফট অনুযায়ী শীঘ্রই পেমেন্ট সম্পন্ন হবে।",
+    fee: "ফি",
+    netPayable: "প্রাপ্য টাকা (Net):",
+    quickAdd: "দ্রুত যোগ:",
+    allBalance: "সব ব্যালেন্স",
+    vipLevelRewards: "ভিআইপি লেভেল রিওয়ার্ড",
+    earningsChart: "সাপ্তাহিক ও মাসিক আয়ের চার্ট",
+    days7: "৭ দিন",
+    days30: "৩০ দিন",
+    peakEarning: "সর্বোচ্চ আয়",
+    totalPeriod: "মোট অর্জিত",
+    currentLevelLabel: "বর্তমান লেভেল",
+    nextLevelTarget: "পরবর্তী লেভেল লক্ষ্য:",
+    approvedMailCount: "অনুমোদিত জিমেইল",
+    memberSinceLabel: "সদস্য হয়েছেন:",
+    profileSettings: "প্রোফাইল সেটিংস",
+    securitySettings: "নিরাপত্তা ও পাসওয়ার্ড",
+    referralTitle: "রেফারেল লিডারবোর্ড ও বোনাস",
+    referralSubtitle: "বন্ধুদের আমন্ত্রণ জানিয়ে প্রতিটি সফল বিক্রয়ে আকর্ষণীয় কমিশন পান",
+    yourReferralLink: "আপনার রেফারেল লিংক",
+    shareWithFriends: "বন্ধুদের সাথে শেয়ার করুন",
+    howItWorks: "কিভাবে কাজ করে?",
+    customerReviews: "কাস্টমার রিভিউ",
+    reviewsSubtitle: "আমাদের সাথে কাজ করা সম্মানিত সেলারদের বাস্তব অভিজ্ঞতা ও মতামত",
+    writeReview: "রিভিউ লিখুন",
+    rating: "রেটিং",
+    yourComment: "আপনার মূল্যবান মতামত লিখুন",
+    submitReview: "রিভিউ পোস্ট করুন",
+    allReviews: "সকল রিভিউ",
+    verifiedSeller: "ভেরিফাইড সেলার",
+    settings: "সেটিংস",
+    appPreferences: "অ্যাপ সেটিংস ও পছন্দ",
+    notificationsSetting: "ইমেইল নোটিফিকেশন",
+    withdrawalAlerts: "উত্তোলন স্ট্যাটাস আপডেট",
+    submissionAlerts: "সাবমিশন অনুমোদন আপডেট",
+    enterEmail: "ইমেইল এড্রেস লিখুন",
+    enterPassword: "পাসওয়ার্ড লিখুন",
+    enterFullName: "আপনার পুরো নাম লিখুন",
+    enterPhone: "ফোন নম্বর (ঐচ্ছিক)",
+    referralCodeOptional: "রেফারেল কোড (ঐচ্ছিক)",
+    currentPassword: "বর্তমান পাসওয়ার্ড",
+    newPassword: "নতুন পাসওয়ার্ড",
+    confirmNewPassword: "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+    updatePassword: "পাসওয়ার্ড আপডেট করুন",
+    passMismatch: "নতুন পাসওয়ার্ড এবং কনফার্ম পাসওয়ার্ড মিলছে না।",
+    faqTitle: "সাধারণ প্রশ্নোত্তর (FAQ)",
+    contactTitle: "যোগাযোগ ও সাপোর্ট",
+    telegramSupport: "টেলিগ্রাম সাপোর্ট চ্যানেল",
+    whatsappSupport: "হোয়াটসঅ্যাপ সাপোর্ট",
+    emailSupport: "অফিসিয়াল ইমেইল সাপোর্ট",
+    rateAppTitle: "আমাদের অ্যাপটি কেমন লাগছে?",
+    rateAppSubtitle: "আপনার মূল্যবান রেটিং আমাদের সেবাকে আরও উন্নত করতে সাহায্য করবে।",
+    submitRating: "সাবমিট করুন",
+    thankYou: "ধন্যবাদ!",
+    topSellersTitle: "টপ সেলার লিডারবোর্ড 🏆",
+    topSellersDesc: "এডমিন ভেরিফাইড সর্বোচ্চ আয়কারী সেরা ১০ সেলারের তালিকা",
+    earnedTotal: "মোট অর্জিত",
+    successfulSubmissions: "সফল সাবমিশন",
+    balanceConverter: "ব্যালেন্স কনভার্টার",
+    balanceConverterDesc: "৬% ফি বাদ দিয়ে সম্ভাব্য আয় (১ USD = ১২০ BDT)",
+    perVerifiedAccount: "প্রতি ভেরিফাইড অ্যাকাউন্ট",
+    perAgedAccount: "প্রতি পুরাতন অ্যাকাউন্ট",
+    startExchangeSubtitle: "সরাসরি জিমেইল বিক্রি করে টাকা নিন",
+    shiftReceive: "রিসিভ করার সময়",
+    shiftReport: "রিপোর্ট দেওয়ার সময়",
+    directWithdrawMethods: "সরাসরি বিকাশ, নগদ বা রকেটে উইথড্র সম্ভব",
+    holdBalanceNotice: "কাজের অডিট শেষ হলে মেইন ব্যালেন্সে জমা হবে",
+    dailyStreakBonusSub: "প্রতিদিন লগইন করুন এবং ফ্রী ক্যাশ বোনাস ও লেভেল রিওয়ার্ড পান",
+    streakBonusClaimedToday: "আজকের দৈনিক বোনাস সংগৃহীত হয়েছে ✅",
+    ratePerTask: "প্রতি টাস্ক রেট:",
+    approvedJobsDone: "অনুমোদিত কাজ সম্পন্ন:",
+    taskPayout: "টাস্ক পে-আউট",
+    auditProcessing: "অডিট প্রসেসিং",
+    fastTrack: "ফাষ্ট ট্র্যাক ⚡",
+    levelBadgePerk: "লেভেল ব্যাজ",
+    vipVerified: "ভিআইপি ভেরিফাইড",
+    workAnalyticsTitle: "কাজের এনালিটিক্স ও ইনকাম গ্রাফ",
+    workAnalyticsSub: "রিয়েল-টাইম সাবমিশন রেকর্ড ও আয় বিশ্লেষণ",
+    days: "দিন",
+    peakSingleEarn: "সর্বোচ্চ এককালীন আয়",
+    earnedMoney: "উপার্জিত টাকা",
+    needWithdrawCash: "টাকা উত্তোলন করতে চান?",
+    fastPayoutMobile: "bKash, Nagad, Rocket বা USDT তে তাৎক্ষণিক",
+    liveTrendingTitle: "লাইভ ট্রেন্ডিং পে-আউট ও এক্সচেঞ্জ",
+    liveTrendingSub: "সক্রিয় ব্যবহারকারীদের সাম্প্রতিক আয়ের রেকর্ড",
+    gmailListStatus: "জিমেইল তালিকা ও স্ট্যাটাস:",
+    noSubmissionHistory: "কোনো সাবমিশন হিস্ট্রি পাওয়া যায়নি।",
+    noSubmissionHistorySub: "জিমেইল এক্সচেঞ্জ শুরু করে আয় করুন।",
+    noWithdrawHistory: "কোনো উইথড্র হিস্ট্রি নেই।",
+    searchByEmail: "ইমেইল দিয়ে খুঁজুন...",
   },
   en: {
     appName: "Mail Factory",
@@ -108,6 +451,7 @@ export const translations = {
     newGmail: "New Gmail",
     oldGmail: "Old Gmail",
     startSelling: "Start Selling Gmail",
+    startExchange: "Start Exchange",
     activeBadge: "Active",
     levelRateTitle: "Level Rate",
     chooseGmailType: "Choose Gmail Type",
@@ -119,6 +463,7 @@ export const translations = {
     yourRate: "Your Level Rate:",
     addAnother: "Add Another",
     bulkPaste: "Bulk Paste Batch",
+    bulkPasteTitle: "Paste Multiple Gmails (Email:Password)",
     estimatedEarnings: "Estimated Earnings",
     confirmSubmit: "Confirm & Submit",
     home: "Home",
@@ -184,6 +529,133 @@ export const translations = {
     streakClaimed: "Today's streak claimed!",
     selectLanguage: "Select Language",
     languageTitle: "Language Preferences",
+
+    // Extended UI Keys
+    homePage: "Home Page",
+    submissionHistory: "Submission History",
+    topSellersList: "Top 10 Sellers List",
+    myProfile: "My Profile",
+    back: "Back",
+    save: "Save",
+    saveChanges: "Save Changes",
+    edit: "Edit",
+    viewAll: "View All",
+    loading: "Loading...",
+    all: "All",
+    search: "Search...",
+    noData: "No data found",
+    status: "Status",
+    checking: "Checking",
+    date: "Date",
+    action: "Action",
+    adminPanel: "Admin Panel",
+    manageReviews: "Manage Reviews",
+    topSellersConfig: "Top Sellers Config",
+    installApp: "Install Mail Factory App",
+    minTwoGmails: "Minimum 2 Gmail accounts required.",
+    emailRequired: "Enter Gmail address",
+    passRequired: "Enter password",
+    invalidEmail: "Enter a valid Gmail address (@gmail.com)",
+    submitting: "Submitting...",
+    submissionSuccess: "Submission Successful! 🎉",
+    submissionSuccessDesc: "Your Gmail accounts were submitted. Our review team will verify them and credit your balance shortly.",
+    viewHistory: "View History",
+    submitMore: "Submit More",
+    ratePerMail: "You will receive per account:",
+    withdrawDisabledAlert: "Withdrawals are currently disabled.",
+    insufficientBalance: "Insufficient balance",
+    enterValidAmount: "Enter a valid amount",
+    withdrawSuccess: "Withdraw Request Submitted!",
+    withdrawSuccessDesc: "Your withdrawal request is being processed. Payment will be completed as per shift schedule.",
+    fee: "Fee",
+    netPayable: "Net Payable:",
+    quickAdd: "Quick Add:",
+    allBalance: "All Balance",
+    vipLevelRewards: "VIP Level Perks",
+    earningsChart: "Earnings Analytics Chart",
+    days7: "7 Days",
+    days30: "30 Days",
+    peakEarning: "Peak Day",
+    totalPeriod: "Period Total",
+    currentLevelLabel: "Current Level",
+    nextLevelTarget: "Next Level Target:",
+    approvedMailCount: "Approved Gmails",
+    memberSinceLabel: "Member Since:",
+    profileSettings: "Profile Settings",
+    securitySettings: "Security & Password",
+    referralTitle: "Referral Program & Leaderboard",
+    referralSubtitle: "Invite friends and earn recurring commission on their approved submissions",
+    yourReferralLink: "Your Referral Link",
+    shareWithFriends: "Share With Friends",
+    howItWorks: "How It Works?",
+    customerReviews: "Customer Reviews",
+    reviewsSubtitle: "Real feedback and testimonials from our verified sellers",
+    writeReview: "Write a Review",
+    rating: "Rating",
+    yourComment: "Write your comment / feedback",
+    submitReview: "Post Review",
+    allReviews: "All Reviews",
+    verifiedSeller: "Verified Seller",
+    settings: "Settings",
+    appPreferences: "App Preferences",
+    notificationsSetting: "Email Notifications",
+    withdrawalAlerts: "Withdrawal Status Updates",
+    submissionAlerts: "Submission Approval Updates",
+    enterEmail: "Enter email address",
+    enterPassword: "Enter password",
+    enterFullName: "Enter your full name",
+    enterPhone: "Phone number (optional)",
+    referralCodeOptional: "Referral code (optional)",
+    currentPassword: "Current Password",
+    newPassword: "New Password",
+    confirmNewPassword: "Confirm New Password",
+    updatePassword: "Update Password",
+    passMismatch: "Passwords do not match.",
+    faqTitle: "Frequently Asked Questions (FAQ)",
+    contactTitle: "Contact & Support",
+    telegramSupport: "Telegram Support Channel",
+    whatsappSupport: "WhatsApp Support",
+    emailSupport: "Official Email Support",
+    rateAppTitle: "Enjoying Mail Factory?",
+    rateAppSubtitle: "Your valuable rating helps us improve our service.",
+    submitRating: "Submit Rating",
+    thankYou: "Thank you!",
+    topSellersTitle: "Top Sellers Leaderboard 🏆",
+    topSellersDesc: "Verified top 10 highest earning sellers ranking",
+    earnedTotal: "Total Earned",
+    successfulSubmissions: "Approved Mails",
+    balanceConverter: "Earnings Converter",
+    balanceConverterDesc: "Est. after 6% fee (1 USD = 120 BDT)",
+    perVerifiedAccount: "Per Verified Account",
+    perAgedAccount: "Per Aged Account",
+    startExchangeSubtitle: "Sell Gmail instantly for cash",
+    shiftReceive: "Receiving Shift",
+    shiftReport: "Report & Payout",
+    directWithdrawMethods: "Instant withdrawal to bKash, Nagad, Rocket or USDT",
+    holdBalanceNotice: "Moved to Main Balance once audit shift completes",
+    dailyStreakBonusSub: "Log in daily to claim free cash bonuses and VIP tier rewards",
+    streakBonusClaimedToday: "Today's daily bonus collected ✅",
+    ratePerTask: "Per Task Rate:",
+    approvedJobsDone: "Approved Mails Completed:",
+    taskPayout: "Task Payout",
+    auditProcessing: "Audit Processing",
+    fastTrack: "Fast Track ⚡",
+    levelBadgePerk: "Level Badge",
+    vipVerified: "VIP Verified",
+    workAnalyticsTitle: "Performance Analytics & Earnings",
+    workAnalyticsSub: "Real-time submission logs and revenue breakdown",
+    days: "Days",
+    peakSingleEarn: "Peak Daily Earnings",
+    earnedMoney: "Earnings",
+    needWithdrawCash: "Need to withdraw cash?",
+    fastPayoutMobile: "Fast payout to bKash, Nagad, Rocket or USDT",
+    liveTrendingTitle: "Live Platform Payout Feed",
+    liveTrendingSub: "Real-time verified community exchanges",
+    gmailListStatus: "Gmail Accounts & Status:",
+    noSubmissionHistory: "No submissions found.",
+    noSubmissionHistorySub: "Start selling Gmail to see activity here.",
+    noWithdrawHistory: "No withdrawal records yet.",
+    searchByEmail: "Search by email...",
   },
   ar: {
     appName: "Mail Factory",
@@ -192,6 +664,7 @@ export const translations = {
     newGmail: "بريد جي ميل جديد",
     oldGmail: "بريد جي ميل قديم",
     startSelling: "ابدأ ببيع حسابات جي ميل",
+    startExchange: "بدء التبادل",
     activeBadge: "نشط",
     levelRateTitle: "سعر المستوى",
     chooseGmailType: "اختر نوع الجي ميل",
@@ -203,6 +676,7 @@ export const translations = {
     yourRate: "سعر مستواك:",
     addAnother: "إضافة حساب آخر",
     bulkPaste: "لصق متعدد",
+    bulkPasteTitle: "لصق عدة حسابات (Email:Password)",
     estimatedEarnings: "الأرباح المقدرة",
     confirmSubmit: "تأكيد وإرسال",
     home: "الرئيسية",
@@ -268,6 +742,132 @@ export const translations = {
     streakClaimed: "تم الحصول على مكافأة اليوم!",
     selectLanguage: "اختر اللغة",
     languageTitle: "اللغة والتفضيلات",
+
+    homePage: "الصفحة الرئيسية",
+    submissionHistory: "سجل العمليات",
+    topSellersList: "قائمة أفضل 10 بائعين",
+    myProfile: "الملف الشخصي",
+    back: "رجوع",
+    save: "حفظ",
+    saveChanges: "حفظ التغييرات",
+    edit: "تعديل",
+    viewAll: "عرض الكل",
+    loading: "جار التحميل...",
+    all: "الكل",
+    search: "بحث...",
+    noData: "لا توجد بيانات",
+    status: "الحالة",
+    checking: "جار التحقق",
+    date: "التاريخ",
+    action: "الإجراء",
+    adminPanel: "لوحة التحكم",
+    manageReviews: "إدارة المراجعات",
+    topSellersConfig: "إعداد المتصدرين",
+    installApp: "تثبيت التطبيق",
+    minTwoGmails: "يلزم تقديم حسابين على الأقل.",
+    emailRequired: "أدخل عنوان الجيميل",
+    passRequired: "أدخل كلمة المرور",
+    invalidEmail: "أدخل عنوان جيميل صالح (@gmail.com)",
+    submitting: "جار التقديم...",
+    submissionSuccess: "تم التقديم بنجاح! 🎉",
+    submissionSuccessDesc: "تم تقديم الحسابات بنجاح. سيقوم فريقنا بالتحقق وإضافة الرصيد سريعاً.",
+    viewHistory: "عرض السجل",
+    submitMore: "تقديم المزيد",
+    ratePerMail: "ستحصل لكل حساب:",
+    withdrawDisabledAlert: "السحب معطل حاليًا مؤقتًا.",
+    insufficientBalance: "الرصيد غير كافٍ",
+    enterValidAmount: "أدخل مبلغًا صحيحًا",
+    withdrawSuccess: "تم إرسال طلب السحب!",
+    withdrawSuccessDesc: "طلبك قيد المعالجة وسيتم تحويل المبلغ قريبًا.",
+    fee: "الرسوم",
+    netPayable: "المبلغ الصافي المستحق:",
+    quickAdd: "إضافة سريعة:",
+    allBalance: "كامل الرصيد",
+    vipLevelRewards: "مكافآت مستويات VIP",
+    earningsChart: "مخطط الأرباح",
+    days7: "7 أيام",
+    days30: "30 يومًا",
+    peakEarning: "أعلى يوم",
+    totalPeriod: "إجمالي الفترة",
+    currentLevelLabel: "المستوى الحالي",
+    nextLevelTarget: "الهدف للمستوى التالي:",
+    approvedMailCount: "الحسابات المقبولة",
+    memberSinceLabel: "تاريخ الانضمام:",
+    profileSettings: "إعدادات الحساب",
+    securitySettings: "الأمان وكلمة المرور",
+    referralTitle: "برنامج الإحالة والمتصدرين",
+    referralSubtitle: "ادعُ أصدقاءك واكسب عمولة مجزية باستمرار",
+    yourReferralLink: "رابط الإحالة الخاص بك",
+    shareWithFriends: "مشاركة مع الأصدقاء",
+    howItWorks: "كيف يعمل؟",
+    customerReviews: "آراء العملاء",
+    reviewsSubtitle: "تجارب حقيقية من شركائنا المعتمدين",
+    writeReview: "اكتب تقييمًا",
+    rating: "التقييم",
+    yourComment: "اكتب رأيك وتجربتك",
+    submitReview: "نشر التقييم",
+    allReviews: "جميع التقييمات",
+    verifiedSeller: "بائع معتمد",
+    settings: "الإعدادات",
+    appPreferences: "تفضيلات التطبيق",
+    notificationsSetting: "إشعارات البريد",
+    withdrawalAlerts: "تحديثات السحب",
+    submissionAlerts: "تحديثات المعاملات",
+    enterEmail: "أدخل البريد الإلكتروني",
+    enterPassword: "أدخل كلمة المرور",
+    enterFullName: "أدخل الاسم الكامل",
+    enterPhone: "رقم الهاتف (اختياري)",
+    referralCodeOptional: "رمز الإحالة (اختياري)",
+    currentPassword: "كلمة المرور الحالية",
+    newPassword: "كلمة المرور الجديدة",
+    confirmNewPassword: "تأكيد كلمة المرور الجديدة",
+    updatePassword: "تحديث كلمة المرور",
+    passMismatch: "كلمات المرور غير متطابقة.",
+    faqTitle: "الأسئلة الشائعة",
+    contactTitle: "الدعم والتواصل",
+    telegramSupport: "قناة الدعم على تليجرام",
+    whatsappSupport: "دعم واتساب",
+    emailSupport: "البريد الإلكتروني الرسمي",
+    rateAppTitle: "ما رأيك في تطبيقنا؟",
+    rateAppSubtitle: "تقييمك يساعدنا على تحسين وتطوير الخدمة.",
+    submitRating: "إرسال التقييم",
+    thankYou: "شكرًا لك!",
+    topSellersTitle: "صدارة أفضل البائعين 🏆",
+    topSellersDesc: "قائمة أفضل 10 بائعين أرباحًا",
+    earnedTotal: "إجمالي الأرباح",
+    successfulSubmissions: "الحسابات المعتمدة",
+    balanceConverter: "محول الأرباح",
+    balanceConverterDesc: "بعد خصم 6% (1 USD = 120 BDT)",
+    perVerifiedAccount: "لكل حساب معتمد",
+    perAgedAccount: "لكل حساب قديم",
+    startExchangeSubtitle: "قم ببيع حساباتك فورًا واستلم الأرباح",
+    shiftReceive: "وقت استلام الحسابات",
+    shiftReport: "تسليم التقارير والدفع",
+    directWithdrawMethods: "سحب فوري إلى بكاش، نغد، روكيت أو USDT",
+    holdBalanceNotice: "يضاف إلى الرصيد الأساسي بعد اكتمال التدقيق",
+    dailyStreakBonusSub: "سجل الدخول يومياً للحصول على مكافأة نقدية ومزايا كبار الشخصيات",
+    streakBonusClaimedToday: "تم استلام مكافأة اليوم اليومية ✅",
+    ratePerTask: "سعر المهمة الواحدة:",
+    approvedJobsDone: "الحسابات المعتمدة المكتملة:",
+    taskPayout: "دفع المهمة",
+    auditProcessing: "معالجة التدقيق",
+    fastTrack: "مسار سريع ⚡",
+    levelBadgePerk: "شارة المستوى",
+    vipVerified: "موثق كبار الشخصيات",
+    workAnalyticsTitle: "تحليلات الأداء والرسم البياني للأرباح",
+    workAnalyticsSub: "سجلات الإرسال في الوقت الفعلي وتوزيع الأرباح",
+    days: "أيام",
+    peakSingleEarn: "أعلى دخل يومي",
+    earnedMoney: "الأرباح",
+    needWithdrawCash: "هل ترغب في سحب أرباحك؟",
+    fastPayoutMobile: "دفع سريع إلى المحافظ الإلكترونية أو USDT",
+    liveTrendingTitle: "سجل السحوبات المباشر للشبكة",
+    liveTrendingSub: "عمليات التبادل الموثقة للمجتمع في الوقت الفعلي",
+    gmailListStatus: "قائمة الحسابات والحالة:",
+    noSubmissionHistory: "لا توجد سجلات إرسال حالياً.",
+    noSubmissionHistorySub: "ابدأ ببيع الحسابات لتظهر نشاطاتك هنا.",
+    noWithdrawHistory: "لا يوجد سجل سحوبات حتى الآن.",
+    searchByEmail: "البحث عبر البريد الإلكتروني...",
   },
   hi: {
     appName: "Mail Factory",
@@ -276,6 +876,7 @@ export const translations = {
     newGmail: "नया जीमेल",
     oldGmail: "पुराना जीमेल",
     startSelling: "जीमेल बेचना शुरू करें",
+    startExchange: "एक्सचेंज शुरू करें",
     activeBadge: "सक्रिय",
     levelRateTitle: "लेवल रेट",
     chooseGmailType: "जीमेल प्रकार चुनें",
@@ -287,6 +888,7 @@ export const translations = {
     yourRate: "आपका लेवल रेट:",
     addAnother: "एक और जोड़ें",
     bulkPaste: "बल्क पेस्ट",
+    bulkPasteTitle: "कई जीमेल पेस्ट करें (Email:Password)",
     estimatedEarnings: "अनुमानित कुल कमाई",
     confirmSubmit: "पुष्टि करें और जमा करें",
     home: "होम",
@@ -321,7 +923,7 @@ export const translations = {
     logoutAll: "सभी उपकरणों से लॉगआउट",
     support: "सहायता",
     liveChat: "लाइव चैट सहायता",
-    faq: "सामान्य प्रश्न (FAQ)",
+    faq: "सामान्य प्रश्न",
     contactUs: "संपर्क करें",
     info: "जानकारी",
     privacyPolicy: "गोपनीयता नीति",
@@ -352,6 +954,132 @@ export const translations = {
     streakClaimed: "आज का स्ट्रिक बोनस प्राप्त हुआ!",
     selectLanguage: "भाषा चुनें",
     languageTitle: "भाषा की प्राथमिकताएं",
+
+    homePage: "मुख्य पृष्ठ",
+    submissionHistory: "काम का इतिहास",
+    topSellersList: "शीर्ष 10 विक्रेताओं की सूची",
+    myProfile: "मेरी प्रोफाइल",
+    back: "वापस",
+    save: "सहेजें",
+    saveChanges: "बदलाव सहेजें",
+    edit: "संपादित करें",
+    viewAll: "सभी देखें",
+    loading: "लोड हो रहा है...",
+    all: "सभी",
+    search: "खोजें...",
+    noData: "कोई डेटा नहीं मिला",
+    status: "स्थिति",
+    checking: "जांच जारी है",
+    date: "तारीख",
+    action: "कार्रवाई",
+    adminPanel: "एडमिन पैनल",
+    manageReviews: "समीक्षा प्रबंधन",
+    topSellersConfig: "शीर्ष विक्रेता कॉन्फ़िग",
+    installApp: "ऐप इंस्टॉल करें",
+    minTwoGmails: "कम से कम 2 जीमेल खाते आवश्यक हैं।",
+    emailRequired: "जीमेल पता दर्ज करें",
+    passRequired: "पासवर्ड दर्ज करें",
+    invalidEmail: "मान्य जीमेल पता दर्ज करें (@gmail.com)",
+    submitting: "सबमिट किया जा रहा है...",
+    submissionSuccess: "सबमिशन सफल रहा! 🎉",
+    submissionSuccessDesc: "आपके जीमेल खाते सफलतापूर्वक जमा हो गए हैं। सत्यापन के बाद राशि क्रेडिट की जाएगी।",
+    viewHistory: "इतिहास देखें",
+    submitMore: "और जमा करें",
+    ratePerMail: "प्रति खाता आपको मिलेगा:",
+    withdrawDisabledAlert: "निकासी वर्तमान में अस्थायी रूप से बंद है।",
+    insufficientBalance: "अपर्याप्त बैलेंस",
+    enterValidAmount: "सही राशि दर्ज करें",
+    withdrawSuccess: "निकासी अनुरोध सफलतापूर्वक भेजा गया!",
+    withdrawSuccessDesc: "आपका अनुरोध समीक्षाधीन है। जल्द ही भुगतान कर दिया जाएगा।",
+    fee: "शुल्क",
+    netPayable: "प्राप्त होने वाली राशि:",
+    quickAdd: "त्वरित जोड़ें:",
+    allBalance: "पूरा बैलेंस",
+    vipLevelRewards: "वीआईपी स्तर के लाभ",
+    earningsChart: "कमाई विश्लेषण चार्ट",
+    days7: "7 दिन",
+    days30: "30 दिन",
+    peakEarning: "उच्चतम दिन",
+    totalPeriod: "कुल अवधि",
+    currentLevelLabel: "वर्तमान स्तर",
+    nextLevelTarget: "अगले स्तर का लक्ष्य:",
+    approvedMailCount: "स्वीकृत जीमेल",
+    memberSinceLabel: "सदस्यता तिथि:",
+    profileSettings: "प्रोफाइल सेटिंग्स",
+    securitySettings: "सुरक्षा और पासवर्ड",
+    referralTitle: "रेफरल प्रोग्राम और लीडरबोर्ड",
+    referralSubtitle: "दोस्तों को आमंत्रित करें और हर सफल काम पर कमीशन प्राप्त करें",
+    yourReferralLink: "आपका रेफरल लिंक",
+    shareWithFriends: "दोस्तों के साथ साझा करें",
+    howItWorks: "यह कैसे काम करता है?",
+    customerReviews: "ग्राहक समीक्षाएं",
+    reviewsSubtitle: "हमारे सत्यापित विक्रेताओं के वास्तविक अनुभव",
+    writeReview: "समीक्षा लिखें",
+    rating: "रेटिंग",
+    yourComment: "अपनी राय और अनुभव लिखें",
+    submitReview: "समीक्षा पोस्ट करें",
+    allReviews: "सभी समीक्षाएं",
+    verifiedSeller: "सत्यापित विक्रेता",
+    settings: "सेटिंग्स",
+    appPreferences: "ऐप प्राथमिकताएं",
+    notificationsSetting: "ईमेल सूचनाएं",
+    withdrawalAlerts: "निकासी अपडेट",
+    submissionAlerts: "सबमिशन अपडेट",
+    enterEmail: "ईमेल पता दर्ज करें",
+    enterPassword: "पासवर्ड दर्ज करें",
+    enterFullName: "अपना पूरा नाम दर्ज करें",
+    enterPhone: "फोन नंबर (वैकल्पिक)",
+    referralCodeOptional: "रेफरल कोड (वैकल्पिक)",
+    currentPassword: "वर्तमान पासवर्ड",
+    newPassword: "नया पासवर्ड",
+    confirmNewPassword: "नए पासवर्ड की पुष्टि करें",
+    updatePassword: "पासवर्ड अपडेट करें",
+    passMismatch: "पासवर्ड मेल नहीं खा रहे हैं।",
+    faqTitle: "अक्सर पूछे जाने वाले प्रश्न (FAQ)",
+    contactTitle: "संपर्क और सहायता",
+    telegramSupport: "टेलीग्राम सहायता चैनल",
+    whatsappSupport: "व्हाट्सएप सहायता",
+    emailSupport: "आधिकारिक ईमेल सहायता",
+    rateAppTitle: "हमारा ऐप आपको कैसा लग रहा है?",
+    rateAppSubtitle: "आपकी रेटिंग हमारी सेवा को बेहतर बनाने में मदद करती है।",
+    submitRating: "सबमिट करें",
+    thankYou: "धन्यवाद!",
+    topSellersTitle: "शीर्ष विक्रेता लीडरबोर्ड 🏆",
+    topSellersDesc: "सत्यापित शीर्ष 10 सबसे अधिक कमाई करने वाले विक्रेता",
+    earnedTotal: "कुल कमाई",
+    successfulSubmissions: "सफल सबमिशन",
+    balanceConverter: "कमाई कनवर्टर",
+    balanceConverterDesc: "6% शुल्क के बाद अनुमानित (1 USD = 120 BDT)",
+    perVerifiedAccount: "प्रति सत्यापित खाता",
+    perAgedAccount: "प्रति पुराना खाता",
+    startExchangeSubtitle: "जीमेल तुरंत बेचें और नकद प्राप्त करें",
+    shiftReceive: "प्राप्ति की पाली",
+    shiftReport: "रिपोर्ट और भुगतान",
+    directWithdrawMethods: "bKash, Nagad, Rocket या USDT में तत्काल निकासी",
+    holdBalanceNotice: "ऑडिट पूरा होने पर मुख्य बैलेंस में ट्रांसफर होगा",
+    dailyStreakBonusSub: "दैनिक नकद बोनस और वीआईपी टियर पुरस्कार पाने के लिए रोज़ाना लॉग इन करें",
+    streakBonusClaimedToday: "आज का दैनिक बोनस प्राप्त हुआ ✅",
+    ratePerTask: "प्रति कार्य दर:",
+    approvedJobsDone: "स्वीकृत कार्य पूर्ण:",
+    taskPayout: "कार्य भुगतान",
+    auditProcessing: "ऑडिट प्रसंस्करण",
+    fastTrack: "फास्ट ट्रैक ⚡",
+    levelBadgePerk: "लेवल बैज",
+    vipVerified: "वीआईपी सत्यापित",
+    workAnalyticsTitle: "कार्य विश्लेषण और आय ग्राफ़",
+    workAnalyticsSub: "वास्तविक समय सबमिशन रिकॉर्ड और आय विश्लेषण",
+    days: "दिन",
+    peakSingleEarn: "दैनिक अधिकतम कमाई",
+    earnedMoney: "कमाई",
+    needWithdrawCash: "क्या आप पैसे निकालना चाहते हैं?",
+    fastPayoutMobile: "bKash, Nagad, Rocket या USDT में त्वरित भुगतान",
+    liveTrendingTitle: "लाइव ट्रेंडिंग पे-आउट और एक्सचेंज",
+    liveTrendingSub: "सक्रिय उपयोगकर्ताओं के हालिया आय रिकॉर्ड",
+    gmailListStatus: "जीमेल सूची और स्थिति:",
+    noSubmissionHistory: "कोई सबमिशन इतिहास नहीं मिला।",
+    noSubmissionHistorySub: "गतिविधि देखने के लिए जीमेल बेचना शुरू करें।",
+    noWithdrawHistory: "अभी तक कोई निकासी इतिहास नहीं है।",
+    searchByEmail: "ईमेल से खोजें...",
   },
   es: {
     appName: "Mail Factory",
@@ -360,6 +1088,7 @@ export const translations = {
     newGmail: "Gmail Nuevo",
     oldGmail: "Gmail Antiguo",
     startSelling: "Empieza a Vender Gmail",
+    startExchange: "Iniciar Intercambio",
     activeBadge: "Activo",
     levelRateTitle: "Tarifa por Nivel",
     chooseGmailType: "Elige Tipo de Gmail",
@@ -371,6 +1100,7 @@ export const translations = {
     yourRate: "Tu Tarifa:",
     addAnother: "Añadir Otro",
     bulkPaste: "Pegar en Masa",
+    bulkPasteTitle: "Pegar Múltiples Cuentas (Email:Password)",
     estimatedEarnings: "Ganancias Estimadas",
     confirmSubmit: "Confirmar y Enviar",
     home: "Inicio",
@@ -436,6 +1166,132 @@ export const translations = {
     streakClaimed: "¡Bono de hoy reclamado!",
     selectLanguage: "Seleccionar Idioma",
     languageTitle: "Preferencias de Idioma",
+
+    homePage: "Página Principal",
+    submissionHistory: "Historial de Envíos",
+    topSellersList: "Lista de los 10 Mejores",
+    myProfile: "Mi Perfil",
+    back: "Atrás",
+    save: "Guardar",
+    saveChanges: "Guardar Cambios",
+    edit: "Editar",
+    viewAll: "Ver Todo",
+    loading: "Cargando...",
+    all: "Todos",
+    search: "Buscar...",
+    noData: "No se encontraron datos",
+    status: "Estado",
+    checking: "Comprobando",
+    date: "Fecha",
+    action: "Acción",
+    adminPanel: "Panel de Administración",
+    manageReviews: "Gestionar Reseñas",
+    topSellersConfig: "Configurar Mejores",
+    installApp: "Instalar Aplicación",
+    minTwoGmails: "Se requieren al menos 2 cuentas de Gmail.",
+    emailRequired: "Ingresa el correo Gmail",
+    passRequired: "Ingresa la contraseña",
+    invalidEmail: "Ingresa una dirección válida (@gmail.com)",
+    submitting: "Enviando...",
+    submissionSuccess: "¡Envío Exitoso! 🎉",
+    submissionSuccessDesc: "Tus cuentas han sido enviadas. Se acreditará tu saldo tras la verificación.",
+    viewHistory: "Ver Historial",
+    submitMore: "Enviar Más",
+    ratePerMail: "Recibirás por cuenta:",
+    withdrawDisabledAlert: "Los retiros están deshabilitados temporalmente.",
+    insufficientBalance: "Saldo insuficiente",
+    enterValidAmount: "Ingresa un monto válido",
+    withdrawSuccess: "¡Solicitud de Retiro Enviada!",
+    withdrawSuccessDesc: "Tu solicitud está en proceso. El pago se completará según el turno.",
+    fee: "Tarifa",
+    netPayable: "Neto a Recibir:",
+    quickAdd: "Añadir Rápido:",
+    allBalance: "Todo el Saldo",
+    vipLevelRewards: "Beneficios de Nivel VIP",
+    earningsChart: "Gráfico de Ganancias",
+    days7: "7 Días",
+    days30: "30 Días",
+    peakEarning: "Día Récord",
+    totalPeriod: "Total Período",
+    currentLevelLabel: "Nivel Actual",
+    nextLevelTarget: "Meta Próximo Nivel:",
+    approvedMailCount: "Gmails Aprobados",
+    memberSinceLabel: "Miembro Desde:",
+    profileSettings: "Ajustes de Perfil",
+    securitySettings: "Seguridad y Clave",
+    referralTitle: "Programa de Referidos y Ranking",
+    referralSubtitle: "Invita amigos y gana comisión en cada venta exitosa",
+    yourReferralLink: "Tu Enlace de Referido",
+    shareWithFriends: "Compartir con Amigos",
+    howItWorks: "¿Cómo Funciona?",
+    customerReviews: "Reseñas de Clientes",
+    reviewsSubtitle: "Testimonios reales de nuestros vendedores verificados",
+    writeReview: "Escribir Reseña",
+    rating: "Calificación",
+    yourComment: "Escribe tu comentario u opinión",
+    submitReview: "Publicar Reseña",
+    allReviews: "Todas las Reseñas",
+    verifiedSeller: "Vendedor Verificado",
+    settings: "Configuración",
+    appPreferences: "Preferencias de la App",
+    notificationsSetting: "Notificaciones por Correo",
+    withdrawalAlerts: "Actualizaciones de Retiros",
+    submissionAlerts: "Actualizaciones de Envíos",
+    enterEmail: "Ingresa tu correo",
+    enterPassword: "Ingresa tu contraseña",
+    enterFullName: "Ingresa tu nombre completo",
+    enterPhone: "Número de teléfono (opcional)",
+    referralCodeOptional: "Código de referido (opcional)",
+    currentPassword: "Contraseña Actual",
+    newPassword: "Nueva Contraseña",
+    confirmNewPassword: "Confirmar Nueva Contraseña",
+    updatePassword: "Actualizar Contraseña",
+    passMismatch: "Las contraseñas no coinciden.",
+    faqTitle: "Preguntas Frecuentes (FAQ)",
+    contactTitle: "Contacto y Soporte",
+    telegramSupport: "Canal de Telegram",
+    whatsappSupport: "Soporte por WhatsApp",
+    emailSupport: "Correo Oficial de Soporte",
+    rateAppTitle: "¿Disfrutas Mail Factory?",
+    rateAppSubtitle: "Tu calificación nos ayuda a mejorar el servicio.",
+    submitRating: "Enviar Calificación",
+    thankYou: "¡Muchas Gracias!",
+    topSellersTitle: "Tabla de Mejores Vendedores 🏆",
+    topSellersDesc: "Ranking verificado de los 10 mejores vendedores",
+    earnedTotal: "Total Ganado",
+    successfulSubmissions: "Envíos Exitosos",
+    balanceConverter: "Conversor de Ganancias",
+    balanceConverterDesc: "Est. tras tarifa del 6% (1 USD = 120 BDT)",
+    perVerifiedAccount: "Por Cuenta Verificada",
+    perAgedAccount: "Por Cuenta Antigua",
+    startExchangeSubtitle: "Vende Gmail al instante por dinero real",
+    shiftReceive: "Turno de Recepción",
+    shiftReport: "Reporte y Pagos",
+    directWithdrawMethods: "Retiro instantáneo a bKash, Nagad, Rocket o USDT",
+    holdBalanceNotice: "Se transfiere al saldo principal tras la auditoría",
+    dailyStreakBonusSub: "Inicia sesión a diario para reclamar bonos y recompensas VIP",
+    streakBonusClaimedToday: "Bono diario de hoy reclamado con éxito ✅",
+    ratePerTask: "Tarifa por tarea:",
+    approvedJobsDone: "Cuentas aprobadas completadas:",
+    taskPayout: "Pago por Tarea",
+    auditProcessing: "Procesamiento de Auditoría",
+    fastTrack: "Vía Rápida ⚡",
+    levelBadgePerk: "Insignia de Nivel",
+    vipVerified: "VIP Verificado",
+    workAnalyticsTitle: "Análisis de Rendimiento y Ganancias",
+    workAnalyticsSub: "Registros en tiempo real y desglose de ingresos",
+    days: "Días",
+    peakSingleEarn: "Ganancia Diaria Máxima",
+    earnedMoney: "Ganancias",
+    needWithdrawCash: "¿Deseas retirar tu dinero?",
+    fastPayoutMobile: "Pago rápido a billeteras móviles o USDT",
+    liveTrendingTitle: "Flujo de Pagos en Vivo",
+    liveTrendingSub: "Intercambios comunitarios verificados en tiempo real",
+    gmailListStatus: "Lista de Cuentas y Estado:",
+    noSubmissionHistory: "No se encontraron envíos.",
+    noSubmissionHistorySub: "Empieza a vender cuentas para ver actividad aquí.",
+    noWithdrawHistory: "No hay registros de retiro aún.",
+    searchByEmail: "Buscar por correo electrónico...",
   },
   fr: {
     appName: "Mail Factory",
@@ -444,6 +1300,7 @@ export const translations = {
     newGmail: "Nouveau Gmail",
     oldGmail: "Ancien Gmail",
     startSelling: "Commencer à Vendre Gmail",
+    startExchange: "Commencer l'Échange",
     activeBadge: "Actif",
     levelRateTitle: "Taux de Niveau",
     chooseGmailType: "Choisir le Type de Gmail",
@@ -455,6 +1312,7 @@ export const translations = {
     yourRate: "Votre Taux:",
     addAnother: "Ajouter un Autre",
     bulkPaste: "Coller en Masse",
+    bulkPasteTitle: "Coller Plusieurs Comptes (Email:Password)",
     estimatedEarnings: "Gains Estimés",
     confirmSubmit: "Confirmer & Envoyer",
     home: "Accueil",
@@ -498,7 +1356,7 @@ export const translations = {
     deleteAccount: "Supprimer le Compte",
     logout: "Déconnexion",
     login: "Connexion",
-    register: "S me S'inscrire",
+    register: "S'inscrire",
     welcomeBack: "Bienvenue sur Mail Factory",
     orWithEmail: "Ou avec E-mail",
     gmailAddress: "Adresse Gmail",
@@ -520,5 +1378,131 @@ export const translations = {
     streakClaimed: "Bonus d'aujourd'hui réclamé !",
     selectLanguage: "Choisir la Langue",
     languageTitle: "Préférences de Langue",
+
+    homePage: "Page d'Accueil",
+    submissionHistory: "Historique des Soumissions",
+    topSellersList: "Top 10 des Meilleurs Vendeurs",
+    myProfile: "Mon Profil",
+    back: "Retour",
+    save: "Enregistrer",
+    saveChanges: "Enregistrer les Modifications",
+    edit: "Modifier",
+    viewAll: "Voir Tout",
+    loading: "Chargement...",
+    all: "Tous",
+    search: "Rechercher...",
+    noData: "Aucune donnée trouvée",
+    status: "Statut",
+    checking: "Vérification",
+    date: "Date",
+    action: "Action",
+    adminPanel: "Panneau d'Administration",
+    manageReviews: "Gestion des Avis",
+    topSellersConfig: "Config Top Vendeurs",
+    installApp: "Installer l'Application",
+    minTwoGmails: "Minimum 2 comptes Gmail requis.",
+    emailRequired: "Entrez l'adresse Gmail",
+    passRequired: "Entrez le mot de passe",
+    invalidEmail: "Entrez une adresse Gmail valide (@gmail.com)",
+    submitting: "Soumission...",
+    submissionSuccess: "Soumission Réussie ! 🎉",
+    submissionSuccessDesc: "Vos comptes Gmail ont été soumis. Notre équipe les validera sous peu.",
+    viewHistory: "Voir l'Historique",
+    submitMore: "Soumettre Plus",
+    ratePerMail: "Vous recevrez par compte :",
+    withdrawDisabledAlert: "Les retraits sont actuellement désactivés.",
+    insufficientBalance: "Solde insuffisant",
+    enterValidAmount: "Entrez un montant valide",
+    withdrawSuccess: "Demande de Retrait Envoyée !",
+    withdrawSuccessDesc: "Votre demande est en cours de traitement. Paiement selon le shift.",
+    fee: "Frais",
+    netPayable: "Net à Recevoir :",
+    quickAdd: "Ajout Rapide :",
+    allBalance: "Tout le Solde",
+    vipLevelRewards: "Avantages du Niveau VIP",
+    earningsChart: "Graphique des Gains",
+    days7: "7 Jours",
+    days30: "30 Jours",
+    peakEarning: "Journée Record",
+    totalPeriod: "Total Période",
+    currentLevelLabel: "Niveau Actuel",
+    nextLevelTarget: "Objectif Niveau Suivant :",
+    approvedMailCount: "Gmails Approuvés",
+    memberSinceLabel: "Membre Depuis :",
+    profileSettings: "Paramètres du Profil",
+    securitySettings: "Sécurité & Mot de Passe",
+    referralTitle: "Programme de Parrainage & Classement",
+    referralSubtitle: "Invitez vos amis et gagnez une commission sur chaque vente réussie",
+    yourReferralLink: "Votre Lien de Parrainage",
+    shareWithFriends: "Partager avec des Amis",
+    howItWorks: "Comment ça Marche ?",
+    customerReviews: "Avis Clients",
+    reviewsSubtitle: "Témoignages réels de nos vendeurs vérifiés",
+    writeReview: "Écrire un Avis",
+    rating: "Note",
+    yourComment: "Écrivez votre commentaire",
+    submitReview: "Publier l'Avis",
+    allReviews: "Tous les Avis",
+    verifiedSeller: "Vendeur Vérifié",
+    settings: "Paramètres",
+    appPreferences: "Préférences de l'App",
+    notificationsSetting: "Notifications par E-mail",
+    withdrawalAlerts: "Mises à jour des Retraits",
+    submissionAlerts: "Mises à jour des Soumissions",
+    enterEmail: "Entrez l'adresse e-mail",
+    enterPassword: "Entrez le mot de passe",
+    enterFullName: "Entrez votre nom complet",
+    enterPhone: "Numéro de téléphone (optionnel)",
+    referralCodeOptional: "Code de parrainage (optionnel)",
+    currentPassword: "Mot de Passe Actuel",
+    newPassword: "Nouveau Mot de Passe",
+    confirmNewPassword: "Confirmer le Nouveau Mot de Passe",
+    updatePassword: "Mettre à Jour le Mot de Passe",
+    passMismatch: "Les mots de passe ne correspondent pas.",
+    faqTitle: "Foire Aux Questions (FAQ)",
+    contactTitle: "Contact & Support",
+    telegramSupport: "Canal Telegram Officiel",
+    whatsappSupport: "Support WhatsApp",
+    emailSupport: "Support E-mail Officiel",
+    rateAppTitle: "Vous aimez Mail Factory ?",
+    rateAppSubtitle: "Votre note nous aide à améliorer notre service.",
+    submitRating: "Envoyer l'Avis",
+    thankYou: "Merci !",
+    topSellersTitle: "Classement des Meilleurs Vendeurs 🏆",
+    topSellersDesc: "Top 10 des vendeurs ayant généré le plus de gains",
+    earnedTotal: "Total Gagné",
+    successfulSubmissions: "Comptes Approuvés",
+    balanceConverter: "Convertisseur de Gains",
+    balanceConverterDesc: "Est. après frais de 6% (1 USD = 120 BDT)",
+    perVerifiedAccount: "Par Compte Vérifié",
+    perAgedAccount: "Par Compte Ancien",
+    startExchangeSubtitle: "Vendez vos Gmails instantanément pour de l'argent",
+    shiftReceive: "Créneau de Réception",
+    shiftReport: "Rapport & Paiement",
+    directWithdrawMethods: "Retrait instantané vers bKash, Nagad, Rocket ou USDT",
+    holdBalanceNotice: "Transféré sur le solde principal après l'audit",
+    dailyStreakBonusSub: "Connectez-vous quotidiennement pour réclamer des bonus et avantages VIP",
+    streakBonusClaimedToday: "Bonus quotidien d'aujourd'hui récupéré avec succès ✅",
+    ratePerTask: "Tarif par tâche :",
+    approvedJobsDone: "Comptes approuvés terminés :",
+    taskPayout: "Paiement par Tâche",
+    auditProcessing: "Traitement de l'Audit",
+    fastTrack: "Voie Rapide ⚡",
+    levelBadgePerk: "Badge de Niveau",
+    vipVerified: "VIP Vérifié",
+    workAnalyticsTitle: "Analyses de Performance & Revenus",
+    workAnalyticsSub: "Journaux de soumission et répartition des gains en direct",
+    days: "Jours",
+    peakSingleEarn: "Gain Quotidien Record",
+    earnedMoney: "Gains",
+    needWithdrawCash: "Besoin de retirer vos fonds ?",
+    fastPayoutMobile: "Paiement rapide vers portefeuilles mobiles ou USDT",
+    liveTrendingTitle: "Flux des Paiements en Direct",
+    liveTrendingSub: "Échanges vérifiés de la communauté en temps réel",
+    gmailListStatus: "Liste des Comptes & Statut :",
+    noSubmissionHistory: "Aucune soumission trouvée.",
+    noSubmissionHistorySub: "Commencez à vendre des comptes pour voir votre activité.",
+    noWithdrawHistory: "Aucun historique de retrait pour le moment.",
+    searchByEmail: "Rechercher par e-mail...",
   }
 };

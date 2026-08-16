@@ -141,6 +141,8 @@ export const TAB_TO_PATH: Record<ActiveTab, string> = {
   admin_top_sellers: '/admin-top-sellers',
   settings: '/settings',
   referral_leaderboard: '/referral-leaderboard',
+  change_password: '/change-password',
+  edit_profile: '/edit-profile',
 };
 
 export const PATH_TO_TAB: Record<string, ActiveTab> = {
@@ -162,6 +164,8 @@ export const PATH_TO_TAB: Record<string, ActiveTab> = {
   '/admin/reviews': 'admin_reviews',
   '/admin-top-sellers': 'admin_top_sellers',
   '/admin/sellers': 'admin_top_sellers',
+  '/change-password': 'change_password',
+  '/edit-profile': 'edit_profile',
 };
 
 const getInitialTabFromUrl = (): ActiveTab => {
@@ -390,6 +394,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         if (document.visibilityState === 'visible') {
           goOnline(db);
+        } else if (document.visibilityState === 'hidden') {
+          // Pause websocket keepalives gracefully when hidden
+          try { goOffline(db); } catch {}
         }
       } catch (e) {
         console.warn('goOnline recovery catch:', e);
@@ -564,7 +571,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Auth & Profile Listener
   useEffect(() => {
+    let unsubNotifs: (() => void) | null = null;
+    let unsubUserRef: (() => void) | null = null;
+    let unsubSubRef: (() => void) | null = null;
+    let unsubWdRef: (() => void) | null = null;
+    let unsubChatRef: (() => void) | null = null;
+
+    const cleanupInnerListeners = () => {
+      if (unsubNotifs) { try { unsubNotifs(); } catch {} unsubNotifs = null; }
+      if (unsubUserRef) { try { unsubUserRef(); } catch {} unsubUserRef = null; }
+      if (unsubSubRef) { try { unsubSubRef(); } catch {} unsubSubRef = null; }
+      if (unsubWdRef) { try { unsubWdRef(); } catch {} unsubWdRef = null; }
+      if (unsubChatRef) { try { unsubChatRef(); } catch {} unsubChatRef = null; }
+    };
+
     const unsubAuth = onAuthStateChanged(auth, async (currUser) => {
+      cleanupInnerListeners();
       setUser(currUser);
       if (currUser) {
         try {
@@ -574,7 +596,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             currUser.email && (currUser.email === 'gmrony135@gmail.com' || currUser.email === 'mailfactorybd@gmail.com')
           );
           
-          const unsubNotifs = onValue(
+          unsubNotifs = onValue(
             notifsRef,
             (snap) => {
               if (snap.exists()) {
@@ -601,7 +623,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
           );
 
-          onValue(
+          unsubUserRef = onValue(
             userRef,
             (snap) => {
               if (snap.exists()) {
@@ -617,7 +639,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
           // Fetch user submissions (Admins listen to master submissions; regular users listen to private user_submissions)
           const subRef = isAdminUser ? ref(db, 'submissions') : ref(db, `user_submissions/${currUser.uid}`);
-          onValue(
+          unsubSubRef = onValue(
             subRef,
             (snap) => {
               const mySubs: Submission[] = [];
@@ -640,7 +662,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
           // Fetch user withdrawals (Admins listen to master requests; regular users listen to private user_withdrawals)
           const wdRef = isAdminUser ? ref(db, 'withdraw_requests') : ref(db, `user_withdrawals/${currUser.uid}`);
-          onValue(
+          unsubWdRef = onValue(
             wdRef,
             (snap) => {
               const myWds: WithdrawRequest[] = [];
@@ -663,7 +685,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
           // Listen for support chat messages
           const chatRef = ref(db, `support_chats/${currUser.uid}`);
-          onChildAdded(
+          unsubChatRef = onChildAdded(
             chatRef,
             (snapshot) => {
               const msg = snapshot.val();
@@ -689,7 +711,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setLoading(false);
     });
 
-    return () => unsubAuth();
+    return () => {
+      cleanupInnerListeners();
+      unsubAuth();
+    };
   }, []);
 
   // Compute Current & Next Level

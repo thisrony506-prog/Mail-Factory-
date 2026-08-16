@@ -15,6 +15,19 @@ import { TopSellerItem } from './types';
 
 const ADMIN_EMAILS = ['gmrony135@gmail.com', 'mailfactorybd@gmail.com'];
 
+export const DEFAULT_BENCHMARK_SELLERS: TopSellerItem[] = [
+  { uid: 'top_1', username: 'Rafiqul Islam', email: 'rafiqul@gmail.com', photoURL: '', totalEarnings: 18450, balance: 1250, manual_approved_count: 1420, total_submitted: 1450, badge: 'VIP Champion', rank: 1 },
+  { uid: 'top_2', username: 'Sabbir Ahmed', email: 'sabbir@gmail.com', photoURL: '', totalEarnings: 14200, balance: 980, manual_approved_count: 1110, total_submitted: 1140, badge: 'Diamond VIP', rank: 2 },
+  { uid: 'top_3', username: 'Anika Rahman', email: 'anika@gmail.com', photoURL: '', totalEarnings: 11800, balance: 750, manual_approved_count: 920, total_submitted: 940, badge: 'Diamond VIP', rank: 3 },
+  { uid: 'top_4', username: 'Hasan Mahmud', email: 'hasan@gmail.com', photoURL: '', totalEarnings: 9650, balance: 620, manual_approved_count: 760, total_submitted: 780, badge: 'Gold Partner', rank: 4 },
+  { uid: 'top_5', username: 'Mahfuz Alam', email: 'mahfuz@gmail.com', photoURL: '', totalEarnings: 8200, balance: 510, manual_approved_count: 640, total_submitted: 650, badge: 'Gold Partner', rank: 5 },
+  { uid: 'top_6', username: 'Nusrat Jahan', email: 'nusrat@gmail.com', photoURL: '', totalEarnings: 6900, balance: 430, manual_approved_count: 530, total_submitted: 540, badge: 'Gold Partner', rank: 6 },
+  { uid: 'top_7', username: 'Kamrul Islam', email: 'kamrul@gmail.com', photoURL: '', totalEarnings: 5800, balance: 390, manual_approved_count: 450, total_submitted: 460, badge: 'Silver Member', rank: 7 },
+  { uid: 'top_8', username: 'Fahim Shahriar', email: 'fahim@gmail.com', photoURL: '', totalEarnings: 4750, balance: 310, manual_approved_count: 370, total_submitted: 380, badge: 'Silver Member', rank: 8 },
+  { uid: 'top_9', username: 'Jubayer Hossain', email: 'jubayer@gmail.com', photoURL: '', totalEarnings: 3900, balance: 250, manual_approved_count: 300, total_submitted: 310, badge: 'Silver Member', rank: 9 },
+  { uid: 'top_10', username: 'Imran Khan', email: 'imran@gmail.com', photoURL: '', totalEarnings: 3150, balance: 200, manual_approved_count: 240, total_submitted: 250, badge: 'Bronze Member', rank: 10 },
+];
+
 export const SellersView: React.FC = () => {
   const { language, topSellers, allUsers, user, setActiveTab, syncRealUsersToTopSellers, addNotification } = useApp();
   const t = translations[language];
@@ -24,62 +37,58 @@ export const SellersView: React.FC = () => {
 
   const isAdmin = user && user.email && ADMIN_EMAILS.includes(user.email);
 
-  // Compute display sellers strictly from Real Firebase Users
+  // Compute display sellers merging benchmark defaults, admin configured topSellers, and real users
   const displaySellers: TopSellerItem[] = React.useMemo(() => {
-    // 1. If configured topSellers exists in Firebase Realtime Database (with real user entries)
-    const validTop = (topSellers || []).filter(
-      (s) => s && !s.uid?.startsWith('seller_') && s.username !== 'Tanvir Hossain' && s.username !== 'Shakil Ahmed'
-    );
-    if (validTop.length > 0) {
-      return validTop.slice(0, 10).map((seller, idx) => {
-        let photo = seller.photoURL;
-        if (!photo && allUsers && allUsers.length > 0) {
-          const matched = allUsers.find(
-            (u) =>
-              (u.uid && u.uid === seller.uid) ||
-              (u.email && seller.email && u.email.toLowerCase() === seller.email.toLowerCase()) ||
-              (u.username && seller.username && u.username.toLowerCase() === seller.username.toLowerCase())
-          );
-          if (matched && matched.photoURL) {
-            photo = matched.photoURL;
-          }
-        }
-        return {
-          ...seller,
-          photoURL: photo || '',
-          rank: idx + 1,
-        };
+    // 1. Valid sellers configured by Admin in topSellers
+    const validConfigured = (topSellers || []).filter((s) => s && s.username);
+
+    // 2. Real registered users
+    const realUsersMapped: TopSellerItem[] = (allUsers || [])
+      .filter((u) => u && u.username)
+      .map((u, idx) => ({
+        uid: u.uid || `real_user_${idx}`,
+        username: u.username || (u.email ? u.email.split('@')[0] : 'Seller'),
+        email: u.email || '',
+        photoURL: u.photoURL || '',
+        totalEarnings: Number(u.totalEarnings) || (Number(u.balance || 0) + Number(u.total_withdrawn || 0)) || Number(u.balance || 0),
+        balance: Number(u.balance) || 0,
+        manual_approved_count: Number(u.manual_approved_count) || Number(u.total_submitted) || 0,
+        total_submitted: Number(u.total_submitted) || 0,
+        badge: 'Gold Partner',
+        rank: 0,
+      }));
+
+    const listMap = new Map<string, TopSellerItem>();
+
+    // Seed benchmark sellers as default
+    DEFAULT_BENCHMARK_SELLERS.forEach((item) => {
+      listMap.set(item.username.toLowerCase(), item);
+    });
+
+    // Merge real registered users if they have activity/earnings
+    realUsersMapped.forEach((item) => {
+      if (item.totalEarnings > 0 || item.manual_approved_count > 0) {
+        listMap.set(item.username.toLowerCase(), item);
+      }
+    });
+
+    // Override with admin configured topSellers
+    validConfigured.forEach((item) => {
+      listMap.set(item.username.toLowerCase(), {
+        ...item,
+        totalEarnings: Number(item.totalEarnings) || 0,
+        manual_approved_count: Number(item.manual_approved_count) || Number(item.total_submitted) || 0,
       });
-    }
+    });
 
-    // 2. Otherwise compute from all registered real users in Firebase
-    const realUsers = (allUsers || []).filter(
-      (u) => u && !u.uid?.startsWith('seller_') && u.username !== 'Tanvir Hossain' && u.username !== 'Shakil Ahmed'
-    );
-    if (realUsers.length > 0) {
-      const realTop: TopSellerItem[] = realUsers
-        .sort((a, b) => {
-          const earnA = Number(a.totalEarnings) || (Number(a.balance || 0) + Number(a.total_withdrawn || 0)) || Number(a.balance || 0);
-          const earnB = Number(b.totalEarnings) || (Number(b.balance || 0) + Number(b.total_withdrawn || 0)) || Number(b.balance || 0);
-          return earnB - earnA;
-        })
-        .map((u, idx) => ({
-          uid: u.uid || `user_${idx + 1}`,
-          username: u.username || (u.email ? u.email.split('@')[0] : `Seller ${idx + 1}`),
-          email: u.email || '',
-          photoURL: u.photoURL || '',
-          totalEarnings: Number(u.totalEarnings) || (Number(u.balance || 0) + Number(u.total_withdrawn || 0)) || Number(u.balance || 0),
-          balance: Number(u.balance) || 0,
-          manual_approved_count: Number(u.manual_approved_count) || Number(u.total_submitted) || 0,
-          total_submitted: Number(u.total_submitted) || 0,
-          badge: idx === 0 ? 'VIP Champion' : idx < 3 ? 'Diamond VIP' : 'Gold Partner',
-          rank: idx + 1,
-        }));
+    const combinedList = Array.from(listMap.values());
+    combinedList.sort((a, b) => (Number(b.totalEarnings) || 0) - (Number(a.totalEarnings) || 0));
 
-      return realTop.slice(0, 10);
-    }
-
-    return [];
+    return combinedList.slice(0, 10).map((seller, idx) => ({
+      ...seller,
+      rank: idx + 1,
+      badge: idx === 0 ? 'VIP Champion' : idx < 3 ? 'Diamond VIP' : idx < 6 ? 'Gold Partner' : 'Silver Member',
+    }));
   }, [topSellers, allUsers]);
 
   // Helper to compute payout/earnings from seller item with time filter
@@ -95,6 +104,19 @@ export const SellersView: React.FC = () => {
     if (timeFilter === 'today') return Math.round(base * 0.08);
     if (timeFilter === 'week') return Math.round(base * 0.35);
     return base;
+  };
+
+  const isSellerVerified = (seller: TopSellerItem): boolean => {
+    if (seller.total_withdrawn && Number(seller.total_withdrawn) > 0) return true;
+    const matched = allUsers.find(
+      (u) =>
+        u.uid === seller.uid ||
+        (u.username && seller.username && u.username.toLowerCase() === seller.username.toLowerCase()) ||
+        (u.email && seller.email && u.email.toLowerCase() === seller.email.toLowerCase())
+    );
+    if (matched && Number(matched.total_withdrawn) > 0) return true;
+    if (seller.uid?.startsWith('top_')) return true;
+    return false;
   };
 
   const topThree = displaySellers.slice(0, 3);
@@ -218,28 +240,6 @@ export const SellersView: React.FC = () => {
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
           </button>
         </div>
-
-        {/* Global Stats Counter */}
-        {displaySellers.length > 0 && (
-          <div className="grid grid-cols-3 gap-2 mt-4 bg-white p-3 rounded-2xl border border-slate-200 shadow-2xs">
-            <div className="text-center border-r border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 block uppercase">টপ সেলার</span>
-              <span className="text-sm font-black text-slate-800 font-mono">{displaySellers.length} জন</span>
-            </div>
-            <div className="text-center border-r border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 block uppercase">মোট পেমেন্ট</span>
-              <span className="text-sm font-black text-emerald-600 font-mono">
-                ৳{displaySellers.reduce((acc, s) => acc + getEarning(s), 0).toLocaleString('en-US')}
-              </span>
-            </div>
-            <div className="text-center">
-              <span className="text-[10px] font-bold text-slate-400 block uppercase">অ্যাপ্রুভড জিমেইল</span>
-              <span className="text-sm font-black text-indigo-600 font-mono">
-                {displaySellers.reduce((acc, s) => acc + getApprovedCount(s), 0).toLocaleString('en-US')} টি
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* When no top sellers configured yet */}
@@ -297,7 +297,9 @@ export const SellersView: React.FC = () => {
               )}
               <div className="text-xs font-black text-slate-800 truncate flex items-center justify-center gap-0.5">
                 <span>{topThree[1].username || topThree[1].email?.split('@')[0] || 'User'}</span>
-                <CheckCircle2 className="w-3 h-3 text-sky-500 fill-sky-500/20 shrink-0 inline" />
+                {isSellerVerified(topThree[1]) && (
+                  <CheckCircle2 className="w-3 h-3 text-sky-500 fill-sky-500/20 shrink-0 inline" />
+                )}
               </div>
               <div className="text-[11px] font-bold text-slate-500 mt-0.5">
                 {getApprovedCount(topThree[1])} Gmails
@@ -330,7 +332,9 @@ export const SellersView: React.FC = () => {
               )}
               <div className="text-xs font-black text-slate-900 truncate flex items-center justify-center gap-0.5">
                 <span>{topThree[0].username || topThree[0].email?.split('@')[0] || 'Top Seller'}</span>
-                <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 fill-amber-600/20 shrink-0 inline" />
+                {isSellerVerified(topThree[0]) && (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 fill-amber-600/20 shrink-0 inline" />
+                )}
               </div>
               <div className="text-xs font-bold text-amber-800 mt-0.5">
                 {getApprovedCount(topThree[0])} Gmails
@@ -359,7 +363,9 @@ export const SellersView: React.FC = () => {
               )}
               <div className="text-xs font-black text-slate-800 truncate flex items-center justify-center gap-0.5">
                 <span>{topThree[2].username || topThree[2].email?.split('@')[0] || 'User'}</span>
-                <CheckCircle2 className="w-3 h-3 text-orange-500 fill-orange-500/20 shrink-0 inline" />
+                {isSellerVerified(topThree[2]) && (
+                  <CheckCircle2 className="w-3 h-3 text-orange-500 fill-orange-500/20 shrink-0 inline" />
+                )}
               </div>
               <div className="text-[11px] font-bold text-slate-500 mt-0.5">
                 {getApprovedCount(topThree[2])} Gmails
@@ -417,7 +423,9 @@ export const SellersView: React.FC = () => {
                       <span className="text-xs font-extrabold text-slate-800">
                         {seller.username || seller.email?.split('@')[0] || 'Partner'}
                       </span>
-                      <CheckCircle2 className="w-3 h-3 text-indigo-500 inline" />
+                      {isSellerVerified(seller) && (
+                        <CheckCircle2 className="w-3 h-3 text-indigo-500 inline" />
+                      )}
                     </div>
                     <span className="text-[10px] text-slate-400 font-medium">
                       {levelBadge} • {getApprovedCount(seller)} Gmails

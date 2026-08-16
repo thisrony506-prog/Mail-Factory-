@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from './AppContext';
-import { translations, LANGUAGES } from './i18n';
+import { translations } from './i18n';
 import { auth, signOut } from './firebase';
 import { usePWAInstall } from './usePWAInstall';
 import { hapticFeedback } from './haptics';
@@ -8,38 +8,31 @@ import {
   Wallet,
   Hourglass,
   Flame,
-  Gift,
-  Share2,
-  Copy,
-  Check,
-  ChevronRight,
   User,
-  Shield,
-  Key,
   LogOut,
-  HelpCircle,
-  Mail,
-  FileText,
-  Info,
-  Trash2,
-  Bell,
   Camera,
-  Users,
   Award,
   Trophy,
   Sparkles,
-  TrendingUp,
-  Download,
-  QrCode,
+  Settings,
+  ShieldCheck,
+  Zap,
+  History,
+  CheckCircle2,
   Activity,
+  TrendingUp,
+  Crown,
+  CheckCircle,
+  Clock,
+  XCircle,
+  BarChart3,
+  ChevronRight,
+  ArrowUpRight,
   Star,
-  Globe,
-  Settings
 } from 'lucide-react';
-import QRCode from 'react-qr-code';
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -64,42 +57,37 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     profile,
     user,
     language,
-    setLanguage,
     currentLevel,
     nextLevel,
     setWithdrawModalOpen,
     setActiveTab,
-    setChatDrawerOpen,
-    setNotifDrawerOpen,
-    setSettingsDrawerOpen,
     claimDailyStreak,
-    commissionPercent,
-    signupBonusUser,
-    copyText,
-    allUsers,
     submissions,
+    withdrawRequests,
   } = useApp();
 
+  const hasWithdrawn = Boolean(
+    (Number(profile?.total_withdrawn) > 0) ||
+    (withdrawRequests && withdrawRequests.some((w) => w.status === 'approved' || w.status === 'pending'))
+  );
+
   const t = translations[language];
-  const { isInstallable, promptInstall } = usePWAInstall();
 
-  const [refTab, setRefTab] = useState<'overview' | 'friends'>('overview');
-  const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const [claimingStreak, setClaimingStreak] = useState<boolean>(false);
-  const [showQR, setShowQR] = useState<boolean>(false);
+  const [chartRange, setChartRange] = useState<7 | 14 | 30>(30);
 
-  // Recharts: Last 30 Days Earnings Trend
-  const last30Days = React.useMemo(() => {
+  // Recharts: Dynamic Earnings Trend Chart Data
+  const chartDays = useMemo(() => {
     const days: string[] = [];
-    for (let i = 29; i >= 0; i--) {
+    for (let i = chartRange - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       days.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
     }
     return days;
-  }, []);
+  }, [chartRange]);
 
-  const chartData = React.useMemo(() => {
+  const chartData = useMemo(() => {
     const earningsMap: Record<string, number> = {};
     submissions
       .filter((s) => s.status === 'approved')
@@ -107,64 +95,32 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         const d = new Date(s.submittedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         earningsMap[d] = (earningsMap[d] || 0) + (s.totalAmount || 0);
       });
-    return last30Days.map((date) => ({
+    return chartDays.map((date) => ({
       date,
       amount: earningsMap[date] || 0,
     }));
-  }, [submissions, last30Days]);
+  }, [submissions, chartDays]);
+
+  // Calculate range total & peak for chart header
+  const rangeTotal = useMemo(() => {
+    return chartData.reduce((acc, curr) => acc + curr.amount, 0);
+  }, [chartData]);
+
+  const rangePeak = useMemo(() => {
+    return Math.max(...chartData.map((d) => d.amount), 0);
+  }, [chartData]);
 
   const alreadyClaimed = profile?.last_login_date === new Date().toDateString();
 
   const mainBalance = (Number(profile?.balance) || 0).toFixed(2);
   const holdBalance = (Number(profile?.hold) || 0).toFixed(2);
-  const referralCode = profile?.referralCode || 'MFVIP88';
-  const referralLink = `${window.location.origin}/?ref=${referralCode}`;
-
-  const handleCopyLink = async () => {
-    const ok = await copyText(referralLink, language === 'bn' ? 'রেফারেল লিংক কপি হয়েছে!' : 'Referral link copied!');
-    if (ok) {
-      setCopiedCode(true);
-      setTimeout(() => setCopiedCode(false), 2000);
-    }
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Mail Factory - Trusted Gmail Exchange',
-        text: `Join Mail Factory using my referral code ${referralCode} and get bonus cash!`,
-        url: referralLink,
-      }).catch(() => handleCopyLink());
-    } else {
-      handleCopyLink();
-    }
-  };
 
   const handleClaimStreak = async () => {
+    hapticFeedback.medium();
     setClaimingStreak(true);
     await claimDailyStreak();
     setClaimingStreak(false);
   };
-
-  const handleLogout = async () => {
-    if (window.confirm(language === 'bn' ? 'আপনি কি নিশ্চিত যে লগআউট করতে চান?' : 'Are you sure you want to log out?')) {
-      await signOut(auth);
-      setActiveTab('home');
-    }
-  };
-
-  // Calculate my referred friends and earnings breakdown per friend
-  const myFriends = allUsers.filter((u) => u.referredBy === user?.uid);
-
-  const totalRefEarnings = React.useMemo(() => {
-    return myFriends.reduce((acc, friend) => {
-      const friendApproved = Number(friend.manual_approved_count) || Number(friend.total_submitted) || 0;
-      const friendEarnings = Number(friend.totalEarnings) || (friendApproved * 10);
-      const salesComm = (friendEarnings * commissionPercent) / 100;
-      const bonus = signupBonusUser || 5;
-      return acc + bonus + salesComm;
-    }, 0);
-  }, [myFriends, commissionPercent, signupBonusUser]);
 
   // Submissions stats
   const totalSubCount = profile?.total_submitted || submissions.length;
@@ -184,176 +140,202 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     : 'Member';
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 pb-24 space-y-4">
-      {/* Profile Header Card */}
-      <div className="rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white p-6 shadow-xl relative overflow-hidden text-center">
-        {/* Top Corner Settings Trigger */}
+    <div className="max-w-2xl mx-auto px-4 py-4 pb-28 space-y-5 animate-fade-in">
+      {/* 1. TOP PROFILE HEADER CARD */}
+      <div className="rounded-3xl bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-950 text-white p-5 sm:p-6 shadow-xl relative overflow-hidden border border-indigo-700/50">
         <button
           onClick={() => {
             hapticFeedback.light();
             setActiveTab('settings');
           }}
-          className="absolute top-4 right-4 z-20 p-2.5 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 text-amber-300 backdrop-blur-md shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
-          title="Account Settings / অ্যাকাউন্ট সেটিংস"
+          className="absolute top-4 right-4 z-20 p-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white backdrop-blur-md shadow-md active:scale-95 transition-all flex items-center gap-1.5"
+          title="Account Settings"
         >
-          <Settings className="w-4 h-4 animate-spin-slow" />
-          <span className="text-xs font-bold text-white hidden sm:inline">
-            {language === 'bn' ? 'সেটিংস' : 'Settings'}
+          <Settings className="w-4 h-4 text-indigo-200" />
+          <span className="text-xs font-bold hidden sm:inline">
+            {t.settings}
           </span>
         </button>
 
-        {/* Background glow effects */}
-        <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-amber-400/15 rounded-full blur-xl pointer-events-none" />
-
-        <div className="relative z-10">
-          {/* Avatar with edit icon */}
-          <div className="relative inline-block mb-3">
-            <div
-              onClick={onOpenEditProfile}
-              className="w-24 h-24 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 p-1 mx-auto cursor-pointer shadow-lg hover:scale-105 transition-transform"
-            >
+        <div className="relative z-10 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+          {/* Avatar with Edit trigger */}
+          <div className="relative group cursor-pointer" onClick={onOpenEditProfile}>
+            <div className="w-20 h-20 sm:w-22 sm:h-22 rounded-2xl bg-gradient-to-tr from-amber-400 via-yellow-300 to-amber-500 p-1 shadow-xl flex-shrink-0">
               {profile?.photoURL ? (
                 <img
                   src={profile.photoURL}
-                  alt={profile.username}
-                  className="w-full h-full rounded-full object-cover"
+                  alt={profile.username || 'User'}
+                  className="w-full h-full rounded-2xl object-cover"
                 />
               ) : (
-                <div className="w-full h-full rounded-full bg-indigo-900 text-amber-300 font-black text-3xl flex items-center justify-center">
+                <div className="w-full h-full rounded-2xl bg-indigo-950 text-amber-300 font-black text-2xl sm:text-3xl flex items-center justify-center">
                   {(profile?.username || 'U').charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
             <button
               onClick={onOpenEditProfile}
-              className="absolute bottom-0 right-0 p-1.5 rounded-full bg-indigo-600 border-2 border-white text-white shadow hover:bg-indigo-700 transition-colors"
-              title="Change Photo"
+              className="absolute -bottom-1 -right-1 p-2 rounded-xl bg-indigo-600 border-2 border-slate-900 text-white shadow-lg group-hover:scale-110 transition-transform"
+              title="Edit Profile"
             >
               <Camera className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <h2 className="text-xl font-black text-white">{profile?.username || 'Mail Factory User'}</h2>
-          <p className="text-xs text-indigo-200 mt-0.5 font-mono">{profile?.email || user?.email}</p>
+          {/* User Details */}
+          <div className="flex-1 space-y-1">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-1.5">
+                <span>{profile?.username || 'User'}</span>
+                {hasWithdrawn && (
+                  <CheckCircle2 className="w-4 h-4 text-sky-400 fill-sky-400/20 shrink-0 inline" title="Verified Payout User" />
+                )}
+              </h2>
+            </div>
 
-          {/* Chips row */}
-          <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white">
-              <Award className="w-3.5 h-3.5 text-amber-300" />
-              <span>{currentLevel.title}</span>
-            </span>
+            <p className="text-xs text-indigo-200 font-mono flex items-center justify-center sm:justify-start gap-1.5">
+              {profile?.email || user?.email}
+            </p>
 
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white">
-              <Flame className="w-3.5 h-3.5 text-amber-400" />
-              <span>{profile?.login_streak || 1} Days Streak</span>
-            </span>
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1.5">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-white/15 border border-white/20 text-amber-300">
+                <Award className="w-3.5 h-3.5" />
+                <span>Level {currentLevel.level} ({currentLevel.title})</span>
+              </span>
 
-            <span className="text-[11px] font-medium px-3 py-1 rounded-full bg-white/10 text-indigo-100">
-              Joined {memberSince}
-            </span>
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-3 py-1 rounded-full bg-white/15 border border-white/20 text-orange-300">
+                <Flame className="w-3.5 h-3.5 text-orange-400" />
+                <span>{profile?.login_streak || 1} Days Streak</span>
+              </span>
+
+              <span className="text-[11px] text-indigo-200 font-medium px-2.5 py-1 rounded-full bg-black/20">
+                Joined {memberSince}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Balance Card & Quick Actions */}
-      <div className="rounded-3xl bg-white border border-slate-200 p-5 shadow-sm space-y-4">
-        <div className="grid grid-cols-2 gap-3">
+      {/* 2. MAIN BALANCE & WALLET ACTIONS */}
+      <div className="rounded-3xl bg-white border border-slate-200/80 p-5 shadow-sm space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Main Balance */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-100">
-            <div className="flex items-center gap-2 text-indigo-700 text-xs font-extrabold mb-1">
-              <Wallet className="w-4 h-4" />
-              <span>{t.mainBalance}</span>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100/60 border border-indigo-200/70">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-extrabold text-indigo-700 flex items-center gap-1.5">
+                <Wallet className="w-4 h-4 text-indigo-600" />
+                {t.mainBalance}
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase">
+                Available
+              </span>
             </div>
-            <div className="text-2xl font-black text-slate-800 font-mono">
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono">
               ৳{mainBalance}
             </div>
-            <span className="text-[10px] text-slate-400 font-medium mt-0.5 block">
-              Available to withdraw
+            <span className="text-[10px] text-slate-500 font-medium mt-0.5 block">
+              {t.directWithdrawMethods}
             </span>
           </div>
 
           {/* Hold Balance */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/40 border border-amber-200/70">
-            <div className="flex items-center gap-2 text-amber-800 text-xs font-extrabold mb-1">
-              <Hourglass className="w-4 h-4" />
-              <span>{t.holdBalance}</span>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-200/80">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-extrabold text-amber-800 flex items-center gap-1.5">
+                <Hourglass className="w-4 h-4 text-amber-600" />
+                {t.holdBalance}
+              </span>
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-800 border border-amber-300 text-[10px] font-bold">
+                Reviewing
+              </span>
             </div>
-            <div className="text-2xl font-black text-amber-700 font-mono">
+            <div className="text-2xl sm:text-3xl font-black text-amber-800 font-mono">
               ৳{holdBalance}
             </div>
-            <span className="text-[10px] text-slate-400 font-medium mt-0.5 block">
-              In audit review
+            <span className="text-[10px] text-slate-500 font-medium mt-0.5 block">
+              {t.holdBalanceNotice}
             </span>
           </div>
         </div>
 
-        {/* Quick Actions Buttons */}
-        <div className="grid grid-cols-4 gap-2">
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <button
-            onClick={() => setActiveTab('withdraw')}
-            className="py-3 px-1.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-[11px] shadow hover:opacity-95 active:scale-95 transition-all flex flex-col items-center justify-center gap-1"
+            onClick={() => {
+              hapticFeedback.medium();
+              setWithdrawModalOpen(true);
+            }}
+            className="py-3 px-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-black shadow-md shadow-indigo-200 transition-all flex items-center justify-center gap-2"
           >
             <Wallet className="w-4 h-4" />
             <span>{t.withdraw}</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('history')}
-            className="py-3 px-1.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[11px] active:scale-95 transition-all flex flex-col items-center justify-center gap-1"
+            onClick={() => {
+              hapticFeedback.light();
+              setActiveTab('history');
+            }}
+            className="py-3 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 text-xs font-bold border border-slate-200 transition-all flex items-center justify-center gap-2"
           >
-            <Hourglass className="w-4 h-4 text-indigo-600" />
+            <History className="w-4 h-4 text-slate-600" />
             <span>{t.history}</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('reviews')}
-            className="py-3 px-1.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-[11px] active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border border-amber-200/80"
+            onClick={() => {
+              hapticFeedback.light();
+              setActiveTab('referral_leaderboard');
+            }}
+            className="col-span-2 sm:col-span-1 py-3 px-3 rounded-2xl bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-900 text-xs font-extrabold border border-amber-200 transition-all flex items-center justify-center gap-2"
           >
-            <Star className="w-4 h-4 text-amber-600 fill-amber-500" />
-            <span>{language === 'bn' ? 'রিভিউ' : 'Reviews'}</span>
-          </button>
-
-          <button
-            onClick={handleShare}
-            className="py-3 px-1.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] active:scale-95 transition-all flex flex-col items-center justify-center gap-1 border border-indigo-100"
-          >
-            <Gift className="w-4 h-4 text-indigo-600" />
-            <span>{t.invite}</span>
+            <Trophy className="w-4 h-4 text-amber-600" />
+            <span>{t.sellers}</span>
           </button>
         </div>
       </div>
 
-      {/* Daily Login Streak Card */}
-      <div className="rounded-3xl bg-white border border-slate-200 p-5 shadow-sm relative overflow-hidden">
-        <div className="flex items-center justify-between mb-4 relative z-10">
-          <h4 className="text-[15px] font-black text-slate-800">{t.dailyStreak}</h4>
-          <span className="text-sm font-black text-orange-500 bg-orange-50 px-2.5 py-1 rounded-lg">
-            {profile?.login_streak || 0} <span className="text-xs font-bold text-orange-400">days</span>
+      {/* 3. DAILY REWARD & LOGIN STREAK */}
+      <div className="rounded-3xl bg-white border border-slate-200/80 p-5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+              <Flame className="w-5 h-5 text-orange-500" />
+              {t.dailyStreak}
+            </h3>
+            <p className="text-xs text-slate-500">
+              {t.dailyStreakBonusSub}
+            </p>
+          </div>
+          <span className="text-xs font-black text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1 rounded-full flex items-center gap-1">
+            <Zap className="w-3.5 h-3.5 fill-orange-500" />
+            {profile?.login_streak || 0} {t.days}
           </span>
         </div>
 
-        {/* 7 Days Indicator */}
-        <div className="flex justify-between items-center relative z-10 mb-5">
-          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => {
+        {/* 7 Days Matrix Visual */}
+        <div className="grid grid-cols-7 gap-1.5 sm:gap-2 text-center py-1">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((dayName, i) => {
             const streakNum = profile?.login_streak || 0;
             const streakMod = streakNum % 7 === 0 && streakNum > 0 ? 7 : streakNum % 7;
-            
             const isCompleted = i < streakMod;
             const isNext = i === streakMod;
 
             return (
               <div
                 key={i}
-                className={`w-9 h-9 rounded-full flex items-center justify-center text-[12px] font-black transition-all ${
+                className={`py-2 px-1 rounded-2xl flex flex-col items-center justify-center transition-all ${
                   isCompleted
-                    ? 'bg-gradient-to-br from-orange-400 to-rose-500 text-white shadow-md shadow-orange-200'
+                    ? 'bg-gradient-to-br from-orange-400 to-rose-500 text-white shadow-md'
                     : isNext && !alreadyClaimed
-                    ? 'bg-orange-100 text-orange-600 border-2 border-orange-400'
+                    ? 'bg-orange-50 text-orange-600 border-2 border-orange-400 animate-pulse'
                     : 'bg-slate-100 text-slate-400'
                 }`}
               >
-                {day}
+                <span className="text-[10px] font-black uppercase opacity-80">{dayName}</span>
+                <span className="text-xs font-black mt-0.5">
+                  {isCompleted ? '✓' : `Day ${i + 1}`}
+                </span>
               </div>
             );
           })}
@@ -362,344 +344,266 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <button
           onClick={handleClaimStreak}
           disabled={claimingStreak || alreadyClaimed}
-          className={`w-full py-3.5 rounded-2xl text-[14px] font-black transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
-            alreadyClaimed 
-              ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+          className={`w-full py-3.5 rounded-2xl text-xs sm:text-sm font-black transition-all active:scale-98 flex items-center justify-center gap-2 ${
+            alreadyClaimed
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
               : 'bg-gradient-to-r from-orange-500 via-rose-500 to-pink-500 hover:opacity-95 text-white shadow-lg shadow-orange-200'
           }`}
         >
-          {claimingStreak ? (language === 'bn' ? 'ক্লেইম হচ্ছে...' : 'Claiming...') : alreadyClaimed ? (language === 'bn' ? 'আজকের জন্য ক্লেইম করা হয়েছে ✅' : 'Claimed for Today ✅') : t.streakClaim}
+          {claimingStreak ? (
+            <span>ক্লেইম হচ্ছে...</span>
+          ) : alreadyClaimed ? (
+            <>
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              <span>{t.streakBonusClaimedToday}</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              <span>{t.streakClaim}</span>
+            </>
+          )}
         </button>
       </div>
 
-      {/* Submission Stats */}
-      <div className="rounded-3xl bg-white border border-slate-200 p-4 shadow-sm">
-        <h4 className="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <TrendingUp className="w-4 h-4 text-indigo-600" />
-          <span>{t.submissionStats}</span>
-        </h4>
+      {/* 4. HIGH-CRAFT LEVEL ROADMAP CARD */}
+      <div className="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white p-5 sm:p-6 shadow-xl border border-slate-700/80 space-y-4 relative overflow-hidden">
+        {/* Glow backdrop decorative effect */}
+        <div className="absolute -top-12 -right-12 w-36 h-36 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
-        <div className="grid grid-cols-4 gap-2 text-center">
-          <div className="p-2.5 rounded-2xl bg-indigo-50/60 border border-indigo-100">
-            <span className="text-lg font-black text-indigo-700 block">{totalSubCount}</span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase">{t.total}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/60 pb-3.5 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-300 text-slate-950 shadow-lg shadow-amber-500/20">
+              <Crown className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-amber-400 uppercase tracking-wider">VIP Level Status</span>
+                <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[10px] font-extrabold">
+                  Level {currentLevel.level}
+                </span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white mt-0.5">
+                {currentLevel.title} Badge
+              </h3>
+            </div>
           </div>
 
-          <div className="p-2.5 rounded-2xl bg-emerald-50/60 border border-emerald-100">
-            <span className="text-lg font-black text-emerald-700 block">{approvedCount}</span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase">{t.approved}</span>
-          </div>
-
-          <div className="p-2.5 rounded-2xl bg-amber-50/60 border border-amber-100">
-            <span className="text-lg font-black text-amber-700 block">{pendingCount}</span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase">{t.pending}</span>
-          </div>
-
-          <div className="p-2.5 rounded-2xl bg-rose-50/60 border border-rose-100">
-            <span className="text-lg font-black text-rose-700 block">{rejectedCount}</span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase">{t.rejected}</span>
+          <div className="bg-slate-800/80 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-slate-700/80 flex items-center justify-between sm:justify-start gap-2">
+            <span className="text-[11px] text-slate-300 font-medium">{t.ratePerTask}</span>
+            <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20 font-mono">
+              ৳{currentLevel.rate}
+            </span>
           </div>
         </div>
 
-        {/* 30 Days Earnings Trend Chart */}
-        <div className="mt-5 pt-5 border-t border-slate-100">
-          <h4 className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-1.5">
-            <Activity className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Earnings Trend (Last 30 Days)</span>
-          </h4>
-          <div className="h-40 w-full">
+        {/* Progress Bar & Target Requirements */}
+        <div className="space-y-2 relative z-10">
+          <div className="flex justify-between items-center text-xs font-bold">
+            <span className="text-slate-300 flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+              {t.approvedJobsDone} <strong className="text-white font-mono">{approvedCount}</strong>
+            </span>
+            <span className="text-amber-400 font-black font-mono">{levelProgress.toFixed(0)}% Complete</span>
+          </div>
+
+          <div className="w-full h-3.5 rounded-full bg-slate-950 p-0.5 border border-slate-700/80 shadow-inner overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-amber-400 via-indigo-500 to-emerald-400 transition-all duration-700 shadow-md shadow-amber-500/20 relative"
+              style={{ width: `${levelProgress}%` }}
+            >
+              <div className="absolute inset-0 bg-white/20 animate-pulse" />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium pt-0.5">
+            <span>বর্তমান: {currentLevel.title}</span>
+            <span className="text-indigo-300 font-bold">
+              {nextLevel
+                ? `পরবর্তী ${nextLevel.title} লেভেলে পৌঁছাতে আরও ${nextLevel.approved - approvedCount} টি অনুমোদিত কাজ দরকার`
+                : 'আপনার একাউন্ট সর্বোচ্চ ভিআইপি ভিআইপি স্তরে উন্নীত 👑'}
+            </span>
+          </div>
+        </div>
+
+        {/* Perks Grid */}
+        <div className="grid grid-cols-3 gap-2 pt-1 border-t border-slate-800 text-center relative z-10">
+          <div className="p-2.5 rounded-2xl bg-slate-800/50 border border-slate-700/50">
+            <Star className="w-4 h-4 text-amber-400 mx-auto mb-1" />
+            <span className="text-[10px] text-slate-400 block font-bold">{t.taskPayout}</span>
+            <span className="text-xs font-black text-white font-mono">৳{currentLevel.rate}</span>
+          </div>
+          <div className="p-2.5 rounded-2xl bg-slate-800/50 border border-slate-700/50">
+            <Zap className="w-4 h-4 text-indigo-400 mx-auto mb-1" />
+            <span className="text-[10px] text-slate-400 block font-bold">{t.auditProcessing}</span>
+            <span className="text-xs font-black text-emerald-400">{t.fastTrack}</span>
+          </div>
+          <div className="p-2.5 rounded-2xl bg-slate-800/50 border border-slate-700/50">
+            <Award className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+            <span className="text-[10px] text-slate-400 block font-bold">{t.levelBadgePerk}</span>
+            <span className="text-xs font-black text-purple-300">{t.vipVerified}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. PERFORMANCE STATS & MODERN EARNINGS GRAPH CARD */}
+      <div className="rounded-3xl bg-white border border-slate-200/80 p-5 sm:p-6 shadow-sm space-y-5">
+        {/* Header & Stats Pills */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900">
+                {t.workAnalyticsTitle}
+              </h3>
+              <p className="text-xs text-slate-500 font-medium">
+                {t.workAnalyticsSub}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl self-start sm:self-auto">
+            {[7, 14, 30].map((range) => (
+              <button
+                key={range}
+                onClick={() => {
+                  hapticFeedback.light();
+                  setChartRange(range as 7 | 14 | 30);
+                }}
+                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
+                  chartRange === range
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                }`}
+              >
+                {range} {t.days}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 4 Stat Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100/80 flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-sm flex-shrink-0">
+              <Activity className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold text-indigo-900 uppercase block">{t.total}</span>
+              <span className="text-base font-black text-indigo-950 font-mono">{totalSubCount} টি</span>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100/80 flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-emerald-600 text-white shadow-sm flex-shrink-0">
+              <CheckCircle className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold text-emerald-900 uppercase block">{t.approved}</span>
+              <span className="text-base font-black text-emerald-950 font-mono">{approvedCount} টি</span>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-100/80 flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-amber-600 text-white shadow-sm flex-shrink-0">
+              <Clock className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold text-amber-900 uppercase block">{t.pending}</span>
+              <span className="text-base font-black text-amber-950 font-mono">{pendingCount} টি</span>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-rose-50/60 border border-rose-100/80 flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-rose-600 text-white shadow-sm flex-shrink-0">
+              <XCircle className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[10px] font-extrabold text-rose-900 uppercase block">{t.rejected}</span>
+              <span className="text-base font-black text-rose-950 font-mono">{rejectedCount} টি</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Financial Summary Highlight Banner */}
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-emerald-400" />
+            <div>
+              <span className="text-[11px] text-slate-300 font-bold block">
+                গত {chartRange} দিনে মোট উপার্জিত
+              </span>
+              <span className="text-lg font-black text-emerald-400 font-mono">
+                ৳{rangeTotal.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          <div className="text-right">
+            <span className="text-[11px] text-slate-300 font-bold block">
+              {t.peakSingleEarn}
+            </span>
+            <span className="text-xs font-black text-amber-300 font-mono bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20 inline-block">
+              ৳{rangePeak.toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        {/* Dynamic Recharts Area Chart with Gradient Fill */}
+        <div className="pt-2">
+          <div className="h-52 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="earningsColor" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 9, fill: '#94a3b8' }} 
-                  minTickGap={20}
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }}
+                  minTickGap={15}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 9, fill: '#94a3b8' }} 
-                  tickFormatter={(val) => `৳${val}`} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }}
+                  tickFormatter={(val) => `৳${val}`}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  labelStyle={{ fontWeight: 'bold', color: '#1e293b' }}
-                  itemStyle={{ color: '#4f46e5', fontWeight: 'bold' }}
-                  formatter={(value) => [`৳${value}`, 'Earned']}
+                  contentStyle={{
+                    backgroundColor: '#0f172a',
+                    borderRadius: '16px',
+                    border: '1px solid #334155',
+                    color: '#ffffff',
+                    boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.3)',
+                    padding: '10px 14px',
+                  }}
+                  itemStyle={{ color: '#34d399', fontWeight: 'bold' }}
+                  labelStyle={{ fontWeight: 'bold', color: '#94a3b8', fontSize: '11px', marginBottom: '2px' }}
+                  formatter={(value) => [`৳${value}`, t.earnedMoney]}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="amount" 
-                  stroke="#6366f1" 
-                  strokeWidth={3} 
-                  dot={false} 
-                  activeDot={{ r: 6, fill: '#6366f1', stroke: '#fff', strokeWidth: 2 }} 
+                <Area
+                  type="monotone"
+                  dataKey="amount"
+                  stroke="#4f46e5"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#earningsColor)"
+                  activeDot={{ r: 6, fill: '#10b981', stroke: '#ffffff', strokeWidth: 2 }}
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
-
-      {/* Level VIP Progress Card */}
-      <div className="rounded-3xl bg-white border border-slate-200 p-4 shadow-sm space-y-2.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center font-black text-sm">
-              👑
-            </div>
-            <div>
-              <h4 className="text-xs font-black text-slate-800">{currentLevel.title}</h4>
-              <span className="text-[10px] text-slate-400">
-                Approved: {approvedCount} Gmails
-              </span>
-            </div>
-          </div>
-          <span className="text-xs font-black text-indigo-700 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100">
-            ৳{currentLevel.rate}/Gmail
-          </span>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-500"
-            style={{ width: `${levelProgress}%` }}
-          />
-        </div>
-
-        <div className="flex justify-between text-[10px] text-slate-400 font-bold">
-          <span>Current: {currentLevel.title}</span>
-          <span className="text-indigo-600">
-            {nextLevel
-              ? `Next Level: ${nextLevel.approved - approvedCount} Left`
-              : 'Max Level Reached 🏆'}
-          </span>
-        </div>
-      </div>
-
-      {/* Referral Hub V3 with Tabs */}
-      <div className="rounded-3xl bg-white border border-slate-200 shadow-sm overflow-hidden">
-        <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 text-white p-5">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                <Gift className="w-5 h-5 text-amber-300" />
-              </div>
-              <div>
-                <h3 className="text-base font-black">{t.inviteAndEarn}</h3>
-                <p className="text-xs text-purple-200">
-                  {t.commission}: <span className="text-amber-300 font-bold">{commissionPercent}%</span> per referral
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {
-                hapticFeedback.light();
-                setActiveTab('referral_leaderboard');
-              }}
-              className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-black shadow-md transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
-            >
-              <Trophy className="w-3.5 h-3.5" />
-              <span>{language === 'bn' ? 'লিডারবোর্ড' : 'Leaderboard'}</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-white/10">
-            <div className="bg-white/10 rounded-xl p-2.5 text-center backdrop-blur-sm">
-              <span className="text-xl font-black">{myFriends.length}</span>
-              <span className="text-[10px] uppercase font-bold text-white/80 block">{t.totalRefers}</span>
-            </div>
-            <div className="bg-white/10 rounded-xl p-2.5 text-center backdrop-blur-sm">
-              <span className="text-xl font-black">৳{(Number(profile?.referralEarnings) || 0).toFixed(2)}</span>
-              <span className="text-[10px] uppercase font-bold text-white/80 block">{t.totalEarned}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Referral Sub-Tabs */}
-        <div className="flex border-b border-slate-100 bg-slate-50">
-          <button
-            onClick={() => setRefTab('overview')}
-            className={`flex-1 py-2.5 text-xs font-bold transition-all ${
-              refTab === 'overview'
-                ? 'bg-white text-indigo-600 border-b-2 border-indigo-600 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            {t.overview}
-          </button>
-          <button
-            onClick={() => setRefTab('friends')}
-            className={`flex-1 py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              refTab === 'friends'
-                ? 'bg-white text-indigo-600 border-b-2 border-indigo-600 shadow-sm'
-                : 'text-slate-500 hover:text-slate-800'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>{t.myFriends} ({myFriends.length})</span>
-          </button>
-        </div>
-
-        {/* Tab 1: Overview */}
-        {refTab === 'overview' ? (
-          <div className="p-4 space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
-              <div>
-                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">
-                  YOUR CODE
-                </span>
-                <span className="text-base font-black font-mono text-indigo-700">
-                  {referralCode}
-                </span>
-              </div>
-              <button
-                onClick={handleCopyLink}
-                className="px-3.5 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-black shadow hover:bg-indigo-700 active:scale-95 flex items-center gap-1"
-              >
-                {copiedCode ? <Check className="w-3.5 h-3.5 text-amber-300" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedCode ? 'Copied!' : t.copy}</span>
-              </button>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-xs text-indigo-950 space-y-1">
-              <div className="font-extrabold flex items-center gap-1 text-indigo-700">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{language === 'bn' ? 'রেফারেল সুবিধা:' : 'Referral Perks:'}</span>
-              </div>
-              <p>✅ {language === 'bn' ? `বন্ধু রেজিস্ট্রেশন করলে আপনি পাবেন ৳${signupBonusUser} বোনাস` : `Instant ৳${signupBonusUser} on friend registration`}</p>
-              <p>✅ {language === 'bn' ? `বন্ধু জিমেইল বিক্রি করলে আপনি পাবেন ${commissionPercent}% আজীবন কমিশন` : `Earn ${commissionPercent}% lifetime commission on every valid sell`}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={handleShare}
-                className="w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-700 text-white text-xs font-black shadow hover:opacity-95 active:scale-98 flex items-center justify-center gap-2"
-              >
-                <Share2 className="w-4 h-4" />
-                <span>{t.shareReferral}</span>
-              </button>
-              
-              <button
-                onClick={() => setShowQR(!showQR)}
-                className="w-full py-3 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-black shadow-sm hover:bg-indigo-100 active:scale-98 flex items-center justify-center gap-2 transition-all"
-              >
-                <QrCode className="w-4 h-4" />
-                <span>{showQR ? (language === 'bn' ? 'লুকান' : 'Hide QR') : (language === 'bn' ? 'QR কোড দেখান' : 'Show QR Code')}</span>
-              </button>
-            </div>
-
-            {/* QR Code Reveal */}
-            {showQR && (
-              <div className="p-4 bg-white rounded-2xl border border-slate-200 flex flex-col items-center justify-center animate-fade-in shadow-sm">
-                <div className="p-3 bg-white rounded-xl shadow-sm border border-slate-100 mb-2">
-                  <QRCode value={referralLink} size={140} fgColor="#4f46e5" />
-                </div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Scan to register</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Tab 2: My Friends */
-          <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
-            {myFriends.length === 0 ? (
-              <div className="text-center py-6 text-slate-400 text-xs font-bold">
-                <Users className="w-8 h-8 mx-auto mb-1.5 opacity-30 text-indigo-600" />
-                <p>{language === 'bn' ? 'এখনো কোনো বন্ধু যুক্ত হয়নি।' : 'No referred friends yet.'}</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">
-                  {language === 'bn' ? 'আপনার রেফারেল লিংক শেয়ার করে বন্ধুদের আমন্ত্রণ জানান।' : 'Share your invite link to earn commissions.'}
-                </p>
-              </div>
-            ) : (
-              <>
-                {/* Overall Summary Bar */}
-                <div className="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-100 flex items-center justify-between text-xs mb-1">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                      {language === 'bn' ? 'মোট রেফারকৃত বন্ধু' : 'Total Referred Friends'}
-                    </span>
-                    <span className="text-sm font-black text-indigo-700">{myFriends.length} জন</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                      {language === 'bn' ? 'বন্ধুদের থেকে মোট আয়' : 'Total Earned from Friends'}
-                    </span>
-                    <span className="text-sm font-black text-emerald-600">৳{totalRefEarnings.toFixed(2)}</span>
-                  </div>
-                </div>
-
-                {/* Friend Cards List */}
-                {myFriends.map((friend, idx) => {
-                  const friendApproved = Number(friend.manual_approved_count) || Number(friend.total_submitted) || 0;
-                  const friendEarnings = Number(friend.totalEarnings) || (friendApproved * 10);
-                  const salesCommission = (friendEarnings * commissionPercent) / 100;
-                  const regBonus = signupBonusUser || 5;
-                  const totalIncomeFromFriend = regBonus + salesCommission;
-
-                  return (
-                    <div
-                      key={friend.uid || idx}
-                      className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-50 to-indigo-50/30 border border-slate-200/80 shadow-sm hover:border-indigo-200 transition-all space-y-2.5"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-extrabold flex items-center justify-center text-xs shadow-sm">
-                            {(friend.username || 'U').charAt(0).toUpperCase()}
-                          </div>
-                          <div>
-                            <span className="font-extrabold text-slate-900 block text-xs">{friend.username}</span>
-                            <span className="text-[10px] text-slate-500 font-mono">{friend.email}</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase block">
-                            {language === 'bn' ? 'মোট আয়' : 'Total Income'}
-                          </span>
-                          <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200/80 inline-block shadow-2xs">
-                            ৳{totalIncomeFromFriend.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Income Breakdown Badges */}
-                      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60 text-[11px]">
-                        <div className="p-2 rounded-xl bg-white border border-slate-100 flex items-center justify-between">
-                          <span className="text-slate-500 font-medium">
-                            {language === 'bn' ? 'রেজিস্ট্রেশন বোনাস:' : 'Reg. Bonus:'}
-                          </span>
-                          <span className="font-extrabold text-indigo-700">৳{regBonus}</span>
-                        </div>
-                        <div className="p-2 rounded-xl bg-white border border-slate-100 flex items-center justify-between">
-                          <span className="text-slate-500 font-medium">
-                            {language === 'bn' ? `কমিশন (${commissionPercent}%):` : `Comm. (${commissionPercent}%):`}
-                          </span>
-                          <span className="font-extrabold text-emerald-700">৳{salesCommission.toFixed(2)}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5 font-medium">
-                        <span>
-                          {language === 'bn' ? `অনুমোদিত জিমেইল: ${friendApproved} টি` : `Approved Gmails: ${friendApproved}`}
-                        </span>
-                        <span className="text-emerald-600 font-bold flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                          {language === 'bn' ? 'সক্রিয় রেফারেল' : 'Active Referral'}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          </div>
-        )}
-      </div>
-
     </div>
   );
 };

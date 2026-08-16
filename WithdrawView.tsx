@@ -69,17 +69,17 @@ export const WithdrawView: React.FC = () => {
     hapticFeedback.medium();
 
     if (isWithdrawDisabled) {
-      setErrorMessage(language === 'bn' ? 'বর্তমানে উত্তোলন বন্ধ আছে।' : 'Withdrawals are currently disabled.');
+      setErrorMessage(t.withdrawDisabledAlert);
       return;
     }
 
     if (!accountNumber.trim()) {
-      setErrorMessage(language === 'bn' ? 'একাউন্ট নাম্বার দিন' : 'Enter account number');
+      setErrorMessage(t.accountNumber);
       return;
     }
     const numAmount = Number(amount);
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
-      setErrorMessage(language === 'bn' ? 'সঠিক টাকার পরিমাণ দিন' : 'Enter a valid amount');
+      setErrorMessage(t.enterValidAmount);
       return;
     }
     if (numAmount < minWithdraw) {
@@ -87,7 +87,7 @@ export const WithdrawView: React.FC = () => {
       return;
     }
     if (numAmount > availableBalance) {
-      setErrorMessage(language === 'bn' ? 'পর্যাপ্ত ব্যালেন্স নেই' : 'Insufficient balance');
+      setErrorMessage(t.insufficientBalance);
       return;
     }
 
@@ -141,7 +141,7 @@ export const WithdrawView: React.FC = () => {
           </div>
           <h3 className="text-xl font-black tracking-tight">{t.withdraw} 💸</h3>
           <p className="text-sm text-indigo-200 mt-1 font-medium">
-            {language === 'bn' ? 'তাৎক্ষণিক মোবাইল ওয়ালেটে টাকা তুলুন' : 'Fast payout directly to your wallet'}
+            {t.fastPayoutMobile}
           </p>
 
           {/* Balance display box */}
@@ -165,12 +165,10 @@ export const WithdrawView: React.FC = () => {
               <CheckCircle className="w-10 h-10" />
             </div>
             <h4 className="text-xl font-black text-slate-800 tracking-tight">
-              {language === 'bn' ? 'অনুরোধ সফল হয়েছে!' : 'Withdrawal Submitted!'}
+              {t.withdrawSuccess}
             </h4>
             <p className="text-sm text-slate-500 max-w-sm mx-auto font-medium leading-relaxed">
-              {language === 'bn'
-                ? `৳${amount} উত্তোলনের অনুরোধ গৃহীত হয়েছে। ২৪-৪৮ ঘণ্টার মধ্যে একাউন্টে পৌঁছাবে।`
-                : `৳${amount} payout submitted. Payout will be verified and sent within 24-48 hours.`}
+              {t.withdrawSuccessDesc}
             </p>
           </div>
         ) : (
@@ -295,16 +293,16 @@ export const WithdrawView: React.FC = () => {
             {parsedAmount >= minWithdraw && (
               <div className="p-4 rounded-xl bg-indigo-50/80 border border-indigo-100 space-y-2">
                 <div className="flex justify-between text-xs font-medium text-slate-600">
-                  <span>{language === 'bn' ? 'উত্তোলনের পরিমাণ' : 'Withdrawal Amount'}</span>
+                  <span>{t.amount}</span>
                   <span className="font-bold text-slate-900">৳{parsedAmount.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xs font-medium text-slate-600">
-                  <span>{language === 'bn' ? `ফি (${feePercent}%)` : `Fee (${feePercent}%)`}</span>
+                  <span>{t.fee} ({feePercent}%)</span>
                   <span className="font-bold text-rose-500">- ৳{feeAmount.toFixed(2)}</span>
                 </div>
                 <div className="h-px w-full bg-indigo-200/50 my-1" />
                 <div className="flex justify-between text-sm">
-                  <span className="font-extrabold text-slate-900">{language === 'bn' ? 'আপনি পাবেন' : 'You will receive'}</span>
+                  <span className="font-extrabold text-slate-900">{t.netPayable}</span>
                   <div className="text-right">
                     <span className="font-black text-indigo-600 font-mono block">৳{netAmount.toFixed(2)}</span>
                     {selectedKey === 'binance' && (
@@ -354,16 +352,16 @@ export const WithdrawView: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="p-5 rounded-2xl bg-white border border-slate-200 flex flex-col gap-2 shadow-sm">
           <ShieldCheck className="w-6 h-6 text-emerald-500" />
-          <h4 className="text-sm font-bold text-slate-900">Secure Transfer</h4>
+          <h4 className="text-sm font-bold text-slate-900">{t.safeData}</h4>
           <p className="text-xs font-medium text-slate-500 leading-relaxed">
-            All withdrawals are processed securely using end-to-end encryption.
+            {t.trustedSafe}
           </p>
         </div>
         <div className="p-5 rounded-2xl bg-white border border-slate-200 flex flex-col gap-2 shadow-sm">
           <Zap className="w-6 h-6 text-amber-500" />
-          <h4 className="text-sm font-bold text-slate-900">Fast Processing</h4>
+          <h4 className="text-sm font-bold text-slate-900">{t.fastPayment}</h4>
           <p className="text-xs font-medium text-slate-500 leading-relaxed">
-            Withdrawal requests are typically processed within 24 to 48 hours.
+            {t.withdrawSuccessDesc}
           </p>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useApp } from './AppContext';
 import { translations, LANGUAGES } from './i18n';
 import { auth, signOut } from './firebase';
@@ -29,7 +30,9 @@ import {
   Wallet,
   History,
   Gift,
-  Trophy
+  Trophy,
+  Menu,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 interface SettingsDrawerProps {
@@ -63,15 +66,6 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   const t = translations[language];
   const { isInstallable, promptInstall } = usePWAInstall();
 
-  React.useEffect(() => {
-    if (isSettingsDrawerOpen) {
-      setSettingsDrawerOpen(false);
-      setActiveTab('settings');
-    }
-  }, [isSettingsDrawerOpen, setSettingsDrawerOpen, setActiveTab]);
-
-  if (!isSettingsDrawerOpen) return null;
-
   const handleLogout = async () => {
     if (window.confirm(language === 'bn' ? 'আপনি কি নিশ্চিত যে লগআউট করতে চান?' : 'Are you sure you want to log out?')) {
       setSettingsDrawerOpen(false);
@@ -89,85 +83,112 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
   const isAdmin = user && ['gmrony135@gmail.com', 'mailfactorybd@gmail.com'].includes(user.email || '');
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/50 backdrop-blur-xs animate-fade-in">
-      {/* Backdrop click to close */}
-      <div 
-        className="absolute inset-0" 
-        onClick={() => setSettingsDrawerOpen(false)} 
-      />
+    <AnimatePresence>
+      {isSettingsDrawerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+            onClick={() => {
+              hapticFeedback.light();
+              setSettingsDrawerOpen(false);
+            }}
+          />
 
-      <div className="relative z-10 w-full max-w-sm sm:max-w-md bg-white h-full shadow-2xl flex flex-col justify-between border-l border-slate-200 overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 text-white p-4 flex items-center justify-between shadow-md">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-              <Settings className="w-5 h-5 text-amber-300 animate-spin-slow" />
-            </div>
-            <div>
-              <h4 className="text-sm font-black">{language === 'bn' ? 'অ্যাকেউন্ট সেটিংস' : 'Settings'}</h4>
-              <span className="text-[10px] text-indigo-200">
-                {language === 'bn' ? 'পছন্দসই সেটিংস পরিবর্তন করুন' : 'Manage your preferences'}
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={() => setSettingsDrawerOpen(false)}
-            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+          {/* Slide-out Menu Panel */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="relative z-10 w-full max-w-xs sm:max-w-sm bg-white h-full shadow-2xl flex flex-col justify-between border-l border-slate-200 overflow-hidden"
           >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* User Card Mini Overview */}
-        {profile && (
-          <div className="p-3.5 bg-slate-900 text-white border-b border-slate-800 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 p-0.5 shrink-0">
-                  {profile.photoURL ? (
-                    <img
-                      src={profile.photoURL}
-                      alt={profile.username}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full rounded-full bg-indigo-900 text-amber-300 font-black text-sm flex items-center justify-center">
-                      {(profile.username || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
+            {/* Header */}
+            <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 text-white p-4 flex items-center justify-between shadow-md shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                  <Menu className="w-5 h-5 text-amber-300" />
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h5 className="text-xs font-black text-white truncate">{profile.username || 'User'}</h5>
-                    <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                      {currentLevel.title}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-400 truncate font-mono mt-0.5">{profile.email || user?.email}</p>
+                <div>
+                  <h4 className="text-sm font-black flex items-center gap-1.5">
+                    <span>{language === 'bn' ? 'মেইন মেনু' : 'Main Menu'}</span>
+                  </h4>
+                  <span className="text-[10px] text-indigo-200">
+                    {language === 'bn' ? 'অ্যাকাউন্ট ও সকল সার্ভিস নেভিগেশন' : 'Navigation & quick settings'}
+                  </span>
                 </div>
               </div>
-
               <button
-                onClick={() => closeAndExecute(onOpenEditProfile)}
-                className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold shrink-0 transition-all cursor-pointer"
+                onClick={() => {
+                  hapticFeedback.light();
+                  setSettingsDrawerOpen(false);
+                }}
+                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
               >
-                {language === 'bn' ? 'এডিট' : 'Edit'}
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Wallet quick balance bar */}
-            <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
-              <div className="bg-slate-800/80 rounded-xl p-2 flex items-center justify-between border border-slate-700/60">
-                <span className="text-[10px] text-slate-400 font-medium">Main Balance:</span>
-                <span className="text-xs font-black text-emerald-400 font-mono">৳{mainBalance}</span>
+            {/* User Card Mini Overview */}
+            {profile && (
+              <div className="p-3.5 bg-slate-900 text-white border-b border-slate-800 space-y-3 shrink-0">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => closeAndExecute(() => setActiveTab('profile'))}
+                    className="flex items-center gap-3 text-left hover:opacity-90 transition-opacity cursor-pointer min-w-0"
+                  >
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-300 p-0.5 shrink-0 shadow-md">
+                      {profile.photoURL ? (
+                        <img
+                          src={profile.photoURL}
+                          alt={profile.username}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full rounded-full bg-indigo-900 text-amber-300 font-black text-sm flex items-center justify-center">
+                          {(profile.username || 'U').charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <h5 className="text-xs font-black text-white truncate">{profile.username || 'User'}</h5>
+                        <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                          {currentLevel.title}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 truncate font-mono mt-0.5">{profile.email || user?.email}</p>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => closeAndExecute(onOpenEditProfile)}
+                    className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold shrink-0 transition-all cursor-pointer shadow-xs"
+                  >
+                    {language === 'bn' ? 'এডিট' : 'Edit'}
+                  </button>
+                </div>
+
+                {/* Wallet quick balance bar */}
+                <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
+                  <button
+                    onClick={() => closeAndExecute(() => setActiveTab('withdraw'))}
+                    className="bg-slate-800/80 hover:bg-slate-800 rounded-xl p-2 flex items-center justify-between border border-slate-700/60 transition-colors cursor-pointer"
+                  >
+                    <span className="text-[10px] text-slate-400 font-medium">Main:</span>
+                    <span className="text-xs font-black text-emerald-400 font-mono">৳{mainBalance}</span>
+                  </button>
+                  <div className="bg-slate-800/80 rounded-xl p-2 flex items-center justify-between border border-slate-700/60">
+                    <span className="text-[10px] text-slate-400 font-medium">Hold:</span>
+                    <span className="text-xs font-black text-amber-400 font-mono">৳{holdBalance}</span>
+                  </div>
+                </div>
               </div>
-              <div className="bg-slate-800/80 rounded-xl p-2 flex items-center justify-between border border-slate-700/60">
-                <span className="text-[10px] text-slate-400 font-medium">Hold Balance:</span>
-                <span className="text-xs font-black text-amber-400 font-mono">৳{holdBalance}</span>
-              </div>
-            </div>
-          </div>
-        )}
+            )}
 
         {/* Settings List Options */}
         <div className="flex-1 overflow-y-auto p-3 space-y-4 bg-slate-50/60 divide-y divide-slate-100">
@@ -535,7 +556,9 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
             <span>{language === 'bn' ? 'অ্যাকাউন্ট ডিলিট অনুরোধ' : 'Request Account Deletion'}</span>
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
-  );
+  )}
+</AnimatePresence>
+);
 };

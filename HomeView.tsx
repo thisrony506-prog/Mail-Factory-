@@ -22,6 +22,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import { GmailType, TopSellerItem } from './types';
+import { DEFAULT_BENCHMARK_SELLERS } from './SellersView';
 
 export const HomeView: React.FC = () => {
   const {
@@ -110,7 +111,7 @@ export const HomeView: React.FC = () => {
               ৳{currentLevel.rate}
             </div>
             <span className="text-[10px] font-semibold text-indigo-500 mt-1 inline-block">
-              Per Verified Account
+              {t.perVerifiedAccount}
             </span>
           </div>
 
@@ -126,7 +127,7 @@ export const HomeView: React.FC = () => {
               ৳{currentLevel.old_rate}
             </div>
             <span className="text-[10px] font-semibold text-purple-500 mt-1 inline-block">
-              Per Aged Account
+              {t.perAgedAccount}
             </span>
           </div>
         </div>
@@ -140,10 +141,10 @@ export const HomeView: React.FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-extrabold text-slate-800">
-              {language === 'bn' ? 'লেনদেন শুরু করুন' : 'Start Exchange'}
+              {t.startExchange}
             </h3>
             <span className="text-[11px] font-medium text-slate-400">
-              {language === 'bn' ? 'সরাসরি জিমেইল বিক্রি করে টাকা নিন' : 'Sell Gmail instantly for cash'}
+              {t.startExchangeSubtitle}
             </span>
           </div>
         </div>
@@ -188,10 +189,10 @@ export const HomeView: React.FC = () => {
           </div>
           <div>
             <h3 className="text-sm font-extrabold text-slate-800">
-              {language === 'bn' ? 'ব্যালেন্স কনভার্টার' : 'Earnings Converter'}
+              {t.balanceConverter}
             </h3>
             <span className="text-[11px] font-medium text-slate-500">
-              {language === 'bn' ? '৬% ফি বাদ দিয়ে সম্ভাব্য আয় (১ USD = ১২০ BDT)' : 'Est. after 6% fee (1 USD = 120 BDT)'}
+              {t.balanceConverterDesc}
             </span>
           </div>
         </div>
@@ -234,7 +235,7 @@ export const HomeView: React.FC = () => {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span className="text-xs font-black tracking-wide uppercase text-amber-300">
-              {language === 'bn' ? 'ভিআইপি লেভেল রিওয়ার্ড' : 'VIP Level Perks'}
+              {t.vipLevelRewards}
             </span>
           </div>
           <span className="text-[10px] font-bold text-slate-400">Level 1 - 5</span>
@@ -279,10 +280,10 @@ export const HomeView: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-extrabold text-slate-800">
-                {language === 'bn' ? 'টপ সেলার লিডারবোর্ড 🏆' : 'Top Sellers Leaderboard 🏆'}
+                {t.topSellersTitle}
               </h3>
               <span className="text-[11px] font-medium text-slate-400">
-                {language === 'bn' ? 'সর্বোচ্চ আয়কারী এক্সচেঞ্জ পার্টনারগণ' : 'Highest verified earning partners'}
+                {t.topSellersDesc}
               </span>
             </div>
           </div>
@@ -293,77 +294,68 @@ export const HomeView: React.FC = () => {
             }}
             className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-0.5 bg-indigo-50 px-2.5 py-1 rounded-xl"
           >
-            <span>{language === 'bn' ? 'সব দেখুন' : 'View All'}</span>
+            <span>{t.viewAll}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
         <div className="pt-1">
           {(() => {
-            let sellersList: TopSellerItem[] = [];
+            const validConfigured = (topSellers || []).filter((s) => s && s.username);
+            const realUsersMapped: TopSellerItem[] = (allUsers || [])
+              .filter((u) => u && u.username)
+              .map((u, idx) => ({
+                uid: u.uid || `real_user_${idx}`,
+                username: u.username || (u.email ? u.email.split('@')[0] : 'Seller'),
+                email: u.email || '',
+                photoURL: u.photoURL || '',
+                totalEarnings: Number(u.totalEarnings) || (Number(u.balance || 0) + Number(u.total_withdrawn || 0)) || Number(u.balance || 0),
+                balance: Number(u.balance) || 0,
+                manual_approved_count: Number(u.manual_approved_count) || Number(u.total_submitted) || 0,
+                total_submitted: Number(u.total_submitted) || 0,
+                badge: 'Gold Partner',
+                rank: 0,
+              }));
 
-            // 1. Prioritize configured topSellers from Firebase (filtering any demo items)
-            const validTop = (topSellers || []).filter(
-              (s) => s && !s.uid?.startsWith('seller_') && s.username !== 'Tanvir Hossain' && s.username !== 'Shakil Ahmed'
-            );
-            if (validTop.length > 0) {
-              sellersList = validTop.slice(0, 3).map((seller, idx) => {
-                let photo = seller.photoURL;
-                if (!photo && allUsers && allUsers.length > 0) {
-                  const matched = allUsers.find(
-                    (u) =>
-                      (u.uid && u.uid === seller.uid) ||
-                      (u.email && seller.email && u.email.toLowerCase() === seller.email.toLowerCase()) ||
-                      (u.username && seller.username && u.username.toLowerCase() === seller.username.toLowerCase())
-                  );
-                  if (matched && matched.photoURL) {
-                    photo = matched.photoURL;
-                  }
-                }
-                return {
-                  ...seller,
-                  photoURL: photo || '',
-                  rank: idx + 1,
-                };
-              });
-            } else {
-              const realUsers = (allUsers || []).filter(
-                (u) => u && !u.uid?.startsWith('seller_') && u.username !== 'Tanvir Hossain' && u.username !== 'Shakil Ahmed'
-              );
-              if (realUsers.length > 0) {
-                sellersList = realUsers
-                  .sort((a, b) => {
-                    const earnA = Number(a.totalEarnings) || (Number(a.balance || 0) + Number(a.total_withdrawn || 0)) || Number(a.balance || 0);
-                    const earnB = Number(b.totalEarnings) || (Number(b.balance || 0) + Number(b.total_withdrawn || 0)) || Number(b.balance || 0);
-                    return earnB - earnA;
-                  })
-                  .slice(0, 3)
-                  .map((u, idx) => ({
-                    uid: u.uid || `user_${idx + 1}`,
-                    username: u.username || (u.email ? u.email.split('@')[0] : `Seller ${idx + 1}`),
-                    email: u.email || '',
-                    photoURL: u.photoURL || '',
-                    totalEarnings: Number(u.totalEarnings) || (Number(u.balance || 0) + Number(u.total_withdrawn || 0)) || Number(u.balance || 0),
-                    balance: Number(u.balance) || 0,
-                    manual_approved_count: Number(u.manual_approved_count) || Number(u.total_submitted) || 0,
-                    total_submitted: Number(u.total_submitted) || 0,
-                    badge: idx === 0 ? 'VIP Champion' : idx < 3 ? 'Diamond VIP' : 'Gold Partner',
-                    rank: idx + 1,
-                  }));
+            const listMap = new Map<string, TopSellerItem>();
+
+            // 1. Seed with benchmark default top sellers
+            DEFAULT_BENCHMARK_SELLERS.forEach((item) => {
+              listMap.set(item.username.toLowerCase(), item);
+            });
+
+            // 2. Merge active real users
+            realUsersMapped.forEach((item) => {
+              if (item.totalEarnings > 0 || item.manual_approved_count > 0) {
+                listMap.set(item.username.toLowerCase(), item);
               }
-            }
+            });
 
-            const top3 = sellersList.slice(0, 3);
+            // 3. Override with admin configured topSellers
+            validConfigured.forEach((item) => {
+              listMap.set(item.username.toLowerCase(), {
+                ...item,
+                totalEarnings: Number(item.totalEarnings) || 0,
+              });
+            });
+
+            const combinedList = Array.from(listMap.values());
+            combinedList.sort((a, b) => (Number(b.totalEarnings) || 0) - (Number(a.totalEarnings) || 0));
+
+            const top3 = combinedList.slice(0, 3).map((seller, idx) => ({
+              ...seller,
+              rank: idx + 1,
+            }));
 
             if (top3.length === 0) {
               return (
                 <div className="py-6 text-center bg-slate-50/70 rounded-2xl border border-dashed border-slate-200 px-4">
                   <Trophy className="w-6 h-6 text-amber-500 mx-auto mb-1.5 opacity-80" />
                   <p className="text-xs font-bold text-slate-700">
-                    {language === 'bn' ? 'এখনও কোনো সেলার যুক্ত হননি' : 'No Leaderboard Sellers Yet'}
+                    {t.noData}
                   </p>
                   <p className="text-[10px] text-slate-400 mt-0.5 mb-2.5">
-                    {language === 'bn' ? 'আজই জিমেইল জমা দিয়ে ১ম স্থান অর্জন করুন!' : 'Submit Gmails today to take 1st place!'}
+                    {t.startSelling}
                   </p>
                   <button
                     onClick={() => {
@@ -373,7 +365,7 @@ export const HomeView: React.FC = () => {
                     className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs inline-flex items-center gap-1 shadow-xs transition-all active:scale-95"
                   >
                     <Sparkles className="w-3 h-3 text-amber-300" />
-                    <span>{language === 'bn' ? 'জিমেইল এক্সচেঞ্জ করুন' : 'Start Exchange'}</span>
+                    <span>{t.startExchange}</span>
                   </button>
                 </div>
               );
