@@ -36,6 +36,7 @@ import {
 export const AuthModal: React.FC = () => {
   const {
     isAuthModalOpen,
+    authModalMode,
     setAuthModalOpen,
     language,
     appLogo,
@@ -46,6 +47,12 @@ export const AuthModal: React.FC = () => {
   const t = translations[language];
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
+
+  React.useEffect(() => {
+    if (isAuthModalOpen && authModalMode) {
+      setMode(authModalMode);
+    }
+  }, [isAuthModalOpen, authModalMode]);
   const [name, setName] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');

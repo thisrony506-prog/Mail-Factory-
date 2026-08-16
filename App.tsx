@@ -16,6 +16,7 @@ import { AdminTopSellersView } from './AdminTopSellersView';
 import { LiveChatDrawer } from './LiveChatDrawer';
 import { NotificationDrawer } from './NotificationDrawer';
 import { AuthModal } from './AuthModal';
+import { GuestLandingView } from './GuestLandingView';
 import {
   EditProfileModal,
   ChangePasswordModal,
@@ -25,10 +26,12 @@ import {
 } from './Modals';
 import { IOSInstallGuideModal } from './IOSInstallGuideModal';
 import { usePWAInstall } from './usePWAInstall';
-import { MessageSquare, Bell } from 'lucide-react';
+import { MessageSquare, Bell, Loader2 } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const {
+    user,
+    loading,
     activeTab,
     unreadNotifsCount,
     setChatDrawerOpen,
@@ -42,6 +45,27 @@ const MainLayout: React.FC = () => {
   const [isChangePassOpen, setIsChangePassOpen] = useState<boolean>(false);
   const [isFAQOpen, setIsFAQOpen] = useState<boolean>(false);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
+
+  // Show loading spinner while auth state is resolving
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white space-y-3">
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+        <p className="text-xs font-bold text-slate-400">Mail Factory লোড হচ্ছে...</p>
+      </div>
+    );
+  }
+
+  // If user is not logged in, render the Guest Landing / Welcome Page
+  if (!user) {
+    return (
+      <>
+        <GuestLandingView />
+        <AuthModal />
+        <LiveChatDrawer />
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-indigo-500 selection:text-white">

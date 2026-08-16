@@ -109,7 +109,9 @@ interface AppContextType {
   }) => Promise<{ success: boolean; message?: string }>;
   updateProfileData: (data: Partial<UserProfile>) => Promise<void>;
   isAuthModalOpen: boolean;
-  setAuthModalOpen: (open: boolean) => void;
+  authModalMode: 'login' | 'register';
+  setAuthModalOpen: (open: boolean, mode?: 'login' | 'register') => void;
+  setAuthModalMode: (mode: 'login' | 'register') => void;
   isWithdrawModalOpen: boolean;
   setWithdrawModalOpen: (open: boolean) => void;
   isChatDrawerOpen: boolean;
@@ -274,7 +276,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
-  const [isAuthModalOpen, setAuthModalOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpenState] = useState<boolean>(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
+
+  const setAuthModalOpen = useCallback((open: boolean, mode?: 'login' | 'register') => {
+    if (mode) setAuthModalMode(mode);
+    setIsAuthModalOpenState(open);
+  }, []);
   const [isWithdrawModalOpen, setWithdrawModalOpen] = useState<boolean>(false);
   const [isChatDrawerOpen, setChatDrawerOpen] = useState<boolean>(false);
   const [isNotifDrawerOpen, setNotifDrawerOpen] = useState<boolean>(false);
@@ -997,7 +1005,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         requestWithdraw,
         updateProfileData,
         isAuthModalOpen,
+        authModalMode,
         setAuthModalOpen,
+        setAuthModalMode,
         isWithdrawModalOpen,
         setWithdrawModalOpen,
         isChatDrawerOpen,
