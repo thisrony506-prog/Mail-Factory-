@@ -143,6 +143,7 @@ export const TAB_TO_PATH: Record<ActiveTab, string> = {
   referral_leaderboard: '/referral-leaderboard',
   change_password: '/change-password',
   edit_profile: '/edit-profile',
+  id_card: '/id-card',
 };
 
 export const PATH_TO_TAB: Record<string, ActiveTab> = {
@@ -166,6 +167,9 @@ export const PATH_TO_TAB: Record<string, ActiveTab> = {
   '/admin/sellers': 'admin_top_sellers',
   '/change-password': 'change_password',
   '/edit-profile': 'edit_profile',
+  '/id-card': 'id_card',
+  '/idcard': 'id_card',
+  '/verify': 'id_card',
 };
 
 const getInitialTabFromUrl = (): ActiveTab => {

@@ -125,7 +125,7 @@ export interface FAQItem {
 
 
 
-export type ActiveTab = 'home' | 'exchange' | 'history' | 'sellers' | 'profile' | 'withdraw' | 'privacy' | 'about' | 'reviews' | 'admin_reviews' | 'admin_top_sellers' | 'settings' | 'referral_leaderboard' | 'change_password' | 'edit_profile';
+export type ActiveTab = 'home' | 'exchange' | 'history' | 'sellers' | 'profile' | 'withdraw' | 'privacy' | 'about' | 'reviews' | 'admin_reviews' | 'admin_top_sellers' | 'settings' | 'referral_leaderboard' | 'change_password' | 'edit_profile' | 'id_card';
 export type Language = 'bn' | 'en' | 'ar' | 'hi' | 'es' | 'fr';
 
 export interface TopSellerItem {

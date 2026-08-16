@@ -33,6 +33,7 @@ import {
   Trophy,
   Menu,
   SlidersHorizontal,
+  QrCode,
 } from 'lucide-react';
 
 interface SettingsDrawerProps {
@@ -199,6 +200,27 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
               <UserCheck className="w-3 h-3 text-indigo-500" />
               <span>{language === 'bn' ? 'অ্যাকাউন্ট ও নিরাপত্তা' : 'Account & Security'}</span>
             </div>
+
+            <button
+              onClick={() => closeAndExecute(() => setActiveTab('id_card'))}
+              className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100/80 hover:to-purple-100/80 border border-indigo-200/80 rounded-2xl transition-all cursor-pointer shadow-xs"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                  <QrCode className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <div className="flex items-center gap-1.5">
+                    <h5 className="text-xs font-black text-indigo-950">{t.memberIdCard}</h5>
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-amber-950 text-[9px] font-black">
+                      Badge
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-indigo-700 font-medium">Digital ID & QR Verification</span>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-indigo-500" />
+            </button>
 
             <button
               onClick={() => closeAndExecute(onOpenEditProfile)}

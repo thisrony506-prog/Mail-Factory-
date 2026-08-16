@@ -16,6 +16,7 @@ import { AdminTopSellersView } from './AdminTopSellersView';
 import { SettingsView } from './SettingsView';
 import { ChangePasswordView } from './ChangePasswordView';
 import { EditProfileView } from './EditProfileView';
+import { MemberIdCardView } from './MemberIdCardView';
 import { ReferralLeaderboard } from './ReferralLeaderboard';
 import { LiveChatDrawer } from './LiveChatDrawer';
 import { NotificationDrawer } from './NotificationDrawer';
@@ -47,6 +48,17 @@ const MainLayout: React.FC = () => {
 
   const [isFAQOpen, setIsFAQOpen] = useState<boolean>(false);
   const [isContactOpen, setIsContactOpen] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    const handleHashCheck = () => {
+      if (window.location.hash.startsWith('#verify')) {
+        setActiveTab('id_card');
+      }
+    };
+    handleHashCheck();
+    window.addEventListener('hashchange', handleHashCheck);
+    return () => window.removeEventListener('hashchange', handleHashCheck);
+  }, [setActiveTab]);
 
   // Show loading spinner while auth state is resolving
   if (loading) {
@@ -102,6 +114,7 @@ const MainLayout: React.FC = () => {
         {activeTab === 'referral_leaderboard' && <ReferralLeaderboard />}
         {activeTab === 'change_password' && <ChangePasswordView />}
         {activeTab === 'edit_profile' && <EditProfileView />}
+        {activeTab === 'id_card' && <MemberIdCardView onBack={() => setActiveTab('profile')} />}
         {activeTab === 'settings' && (
           <SettingsView
             onOpenEditProfile={() => setActiveTab('edit_profile')}

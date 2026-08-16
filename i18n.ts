@@ -228,6 +228,24 @@ export interface TranslationSchema {
   noSubmissionHistorySub: string;
   noWithdrawHistory: string;
   searchByEmail: string;
+  memberIdCard: string;
+  memberIdCardSubtitle: string;
+  generalMember: string;
+  verifiedMember: string;
+  accountStatus: string;
+  statusActive: string;
+  joinDateLabel: string;
+  userIdLabel: string;
+  fullNameLabel: string;
+  downloadCard: string;
+  cardTheme: string;
+  scanToVerify: string;
+  verificationProof: string;
+  verifiedSuccessNotice: string;
+  generalMemberNotice: string;
+  copyVerificationLink: string;
+  verificationLinkCopied: string;
+  officialIdBadge: string;
 }
 
 export const translations: Record<Language, TranslationSchema> = {
@@ -443,6 +461,24 @@ export const translations: Record<Language, TranslationSchema> = {
     noSubmissionHistorySub: "জিমেইল এক্সচেঞ্জ শুরু করে আয় করুন।",
     noWithdrawHistory: "কোনো উইথড্র হিস্ট্রি নেই।",
     searchByEmail: "ইমেইল দিয়ে খুঁজুন...",
+    memberIdCard: "ডিজিটাল মেম্বার আইডি কার্ড",
+    memberIdCardSubtitle: "অফিসিয়াল মেম্বারশিপ ও ভেরিফিকেশন ব্যাজ",
+    generalMember: "সাধারণ সদস্য",
+    verifiedMember: "ভেরিফাইড সদস্য",
+    accountStatus: "অ্যাকাউন্ট স্ট্যাটাস",
+    statusActive: "সক্রিয় (Active)",
+    joinDateLabel: "যোগদানের তারিখ",
+    userIdLabel: "ইউজার আইডি",
+    fullNameLabel: "পূর্ণ নাম",
+    downloadCard: "আইডি কার্ড ডাউনলোড",
+    cardTheme: "কার্ডের থিম",
+    scanToVerify: "যাচাইয়ের জন্য স্ক্যান করুন",
+    verificationProof: "অফিসিয়াল ভেরিফিকেশন সার্টিফিকেট",
+    verifiedSuccessNotice: "এই মেম্বার কার্ডটি সফলভাবে টাকা উত্তোলনের পর ভেরিফাইড মর্যাদা লাভ করেছে।",
+    generalMemberNotice: "প্রথমবার সফল উত্তোলনের পর স্বয়ংক্রিয়ভাবে ভেরিফাইড ব্যাজ সক্রিয় হবে।",
+    copyVerificationLink: "ভেরিফিকেশন লিংক কপি",
+    verificationLinkCopied: "ভেরিফিকেশন লিংক কপি করা হয়েছে!",
+    officialIdBadge: "OFFICIAL MEMBER CARD",
   },
   en: {
     appName: "Mail Factory",
@@ -656,6 +692,24 @@ export const translations: Record<Language, TranslationSchema> = {
     noSubmissionHistorySub: "Start selling Gmail to see activity here.",
     noWithdrawHistory: "No withdrawal records yet.",
     searchByEmail: "Search by email...",
+    memberIdCard: "Digital Member ID Card",
+    memberIdCardSubtitle: "Official Membership & Verification Badge",
+    generalMember: "General Member",
+    verifiedMember: "Verified Member",
+    accountStatus: "Account Status",
+    statusActive: "Active",
+    joinDateLabel: "Join Date",
+    userIdLabel: "User ID",
+    fullNameLabel: "Full Name",
+    downloadCard: "Download ID Card",
+    cardTheme: "Card Theme",
+    scanToVerify: "Scan to Verify",
+    verificationProof: "Official Verification Certificate",
+    verifiedSuccessNotice: "This member card is officially verified after successful payout transactions.",
+    generalMemberNotice: "Will automatically upgrade to Verified status upon your first completed withdrawal.",
+    copyVerificationLink: "Copy Verification Link",
+    verificationLinkCopied: "Verification link copied to clipboard!",
+    officialIdBadge: "OFFICIAL MEMBER CARD",
   },
   ar: {
     appName: "Mail Factory",
@@ -868,6 +922,24 @@ export const translations: Record<Language, TranslationSchema> = {
     noSubmissionHistorySub: "ابدأ ببيع الحسابات لتظهر نشاطاتك هنا.",
     noWithdrawHistory: "لا يوجد سجل سحوبات حتى الآن.",
     searchByEmail: "البحث عبر البريد الإلكتروني...",
+    memberIdCard: "بطاقة العضوية الرقمية (ID Card)",
+    memberIdCardSubtitle: "شارة العضوية والتوثيق الرسمية",
+    generalMember: "عضو عام",
+    verifiedMember: "عضو موثق",
+    accountStatus: "حالة الحساب",
+    statusActive: "نشط (Active)",
+    joinDateLabel: "تاريخ الانضمام",
+    userIdLabel: "معرف المستخدم (ID)",
+    fullNameLabel: "الاسم الكامل",
+    downloadCard: "تحميل بطاقة العضوية",
+    cardTheme: "سمة البطاقة",
+    scanToVerify: "امسح الرمز للتحقق",
+    verificationProof: "شهادة التوثيق الرسمية",
+    verifiedSuccessNotice: "هذه البطاقة موثقة رسمياً بعد إتمام عمليات السحب بنجاح.",
+    generalMemberNotice: "ستتم الترقية تلقائياً إلى حالة العضو الموثق بعد أول عملية سحب مكتملة.",
+    copyVerificationLink: "نسخ رابط التحقق",
+    verificationLinkCopied: "تم نسخ رابط التحقق بنجاح!",
+    officialIdBadge: "OFFICIAL MEMBER CARD",
   },
   hi: {
     appName: "Mail Factory",
@@ -1080,6 +1152,24 @@ export const translations: Record<Language, TranslationSchema> = {
     noSubmissionHistorySub: "गतिविधि देखने के लिए जीमेल बेचना शुरू करें।",
     noWithdrawHistory: "अभी तक कोई निकासी इतिहास नहीं है।",
     searchByEmail: "ईमेल से खोजें...",
+    memberIdCard: "डिजिटल सदस्य आईडी कार्ड",
+    memberIdCardSubtitle: "आधिकारिक सदस्यता और सत्यापन बैज",
+    generalMember: "सामान्य सदस्य",
+    verifiedMember: "सत्यापित सदस्य",
+    accountStatus: "खाता स्थिति",
+    statusActive: "सक्रिय (Active)",
+    joinDateLabel: "शामिल होने की तिथि",
+    userIdLabel: "यूज़र आईडी",
+    fullNameLabel: "पूरा नाम",
+    downloadCard: "आईडी कार्ड डाउनलोड करें",
+    cardTheme: "कार्ड थीम",
+    scanToVerify: "सत्यापन के लिए स्कैन करें",
+    verificationProof: "आधिकारिक सत्यापन प्रमाणपत्र",
+    verifiedSuccessNotice: "सफल निकासी के बाद यह आईडी कार्ड आधिकारिक रूप से सत्यापित है।",
+    generalMemberNotice: "पहली सफल निकासी के बाद स्वचालित रूप से सत्यापित बैज प्राप्त होगा।",
+    copyVerificationLink: "सत्यापन लिंक कॉपी करें",
+    verificationLinkCopied: "सत्यापन लिंक कॉपी किया गया!",
+    officialIdBadge: "OFFICIAL MEMBER CARD",
   },
   es: {
     appName: "Mail Factory",
@@ -1292,6 +1382,24 @@ export const translations: Record<Language, TranslationSchema> = {
     noSubmissionHistorySub: "Empieza a vender cuentas para ver actividad aquí.",
     noWithdrawHistory: "No hay registros de retiro aún.",
     searchByEmail: "Buscar por correo electrónico...",
+    memberIdCard: "Tarjeta de Identificación Digital",
+    memberIdCardSubtitle: "Membresía Oficial e Insignia de Verificación",
+    generalMember: "Miembro General",
+    verifiedMember: "Miembro Verificado",
+    accountStatus: "Estado de la Cuenta",
+    statusActive: "Activo (Active)",
+    joinDateLabel: "Fecha de Ingreso",
+    userIdLabel: "ID de Usuario",
+    fullNameLabel: "Nombre Completo",
+    downloadCard: "Descargar Tarjeta",
+    cardTheme: "Tema de la Tarjeta",
+    scanToVerify: "Escanear para Verificar",
+    verificationProof: "Certificado de Verificación Oficial",
+    verifiedSuccessNotice: "Esta tarjeta está verificada oficialmente tras retiros exitosos.",
+    generalMemberNotice: "Se actualizará automáticamente a Verificado tras tu primer retiro.",
+    copyVerificationLink: "Copiar Enlace de Verificación",
+    verificationLinkCopied: "¡Enlace de verificación copiado!",
+    officialIdBadge: "OFFICIAL MEMBER CARD",
   },
   fr: {
     appName: "Mail Factory",
@@ -1504,5 +1612,23 @@ export const translations: Record<Language, TranslationSchema> = {
     noSubmissionHistorySub: "Commencez à vendre des comptes pour voir votre activité.",
     noWithdrawHistory: "Aucun historique de retrait pour le moment.",
     searchByEmail: "Rechercher par e-mail...",
+    memberIdCard: "Carte de Membre Digitale",
+    memberIdCardSubtitle: "Badge Officiel d'Adhésion & de Vérification",
+    generalMember: "Membre Général",
+    verifiedMember: "Membre Vérifié",
+    accountStatus: "Statut du Compte",
+    statusActive: "Actif (Active)",
+    joinDateLabel: "Date d'Adhésion",
+    userIdLabel: "ID Utilisateur",
+    fullNameLabel: "Nom Complet",
+    downloadCard: "Télécharger la Carte",
+    cardTheme: "Thème de la Carte",
+    scanToVerify: "Scanner pour Vérifier",
+    verificationProof: "Certificat Officiel de Vérification",
+    verifiedSuccessNotice: "Cette carte de membre est officiellement vérifiée suite à des retraits réussis.",
+    generalMemberNotice: "Passera automatiquement au statut Vérifié dès votre premier retrait réussi.",
+    copyVerificationLink: "Copier le Lien de Vérification",
+    verificationLinkCopied: "Lien de vérification copié avec succès !",
+    officialIdBadge: "OFFICIAL MEMBER CARD",
   }
 };
