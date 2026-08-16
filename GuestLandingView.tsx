@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from './AppContext';
 import { translations, LANGUAGES } from './i18n';
 import { hapticFeedback } from './haptics';
+import { AuthPageView } from './AuthPageView';
 import {
   ShieldCheck,
   Zap,
@@ -31,6 +32,8 @@ export const GuestLandingView: React.FC = () => {
   const {
     language,
     setLanguage,
+    isAuthModalOpen,
+    authModalMode,
     setAuthModalOpen,
     topSellers,
     allUsers,
@@ -44,13 +47,82 @@ export const GuestLandingView: React.FC = () => {
   const t = translations[language] || translations['bn'];
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
-  // Combine real users & topSellers for ranking
-  const sellersList = React.useMemo(() => {
-    if (allUsers && allUsers.length > 0) {
-      return allUsers.slice(0, 8);
+  const [authMode, setAuthMode] = useState<'none' | 'register' | 'login'>(() => {
+    try {
+      const path = window.location.pathname;
+      if (path === '/register') return 'register';
+      if (path === '/login') return 'login';
+      const search = new URLSearchParams(window.location.search);
+      if (search.get('mode') === 'register') return 'register';
+      if (search.get('mode') === 'login') return 'login';
+    } catch {
+      // Safe ignore
     }
-    return topSellers.slice(0, 8);
+    return 'none';
+  });
+
+  // Sync with triggers from AppContext if any component calls setAuthModalOpen
+  useEffect(() => {
+    if (isAuthModalOpen && authModalMode) {
+      setAuthMode(authModalMode);
+      setAuthModalOpen(false); // Render full page AuthPageView instead of popup modal
+    }
+  }, [isAuthModalOpen, authModalMode, setAuthModalOpen]);
+
+  // Combine real users & topSellers strictly from Real Firebase Data
+  const sellersList = React.useMemo(() => {
+    // 1. Check if configured topSellers exist in Firebase Realtime Database
+    const validTop = (topSellers || []).filter(
+      (s) => s && !s.uid?.startsWith('seller_') && s.username !== 'Tanvir Hossain' && s.username !== 'Shakil Ahmed'
+    );
+    if (validTop.length > 0) {
+      return validTop.slice(0, 8).map((s, idx) => ({ ...s, rank: idx + 1 }));
+    }
+
+    // 2. Otherwise compute top real users registered in Firebase
+    const realUsers = (allUsers || []).filter(
+      (u) => u && !u.uid?.startsWith('seller_') && u.username !== 'Tanvir Hossain' && u.username !== 'Shakil Ahmed'
+    );
+    if (realUsers.length > 0) {
+      const computed = realUsers
+        .map((u) => {
+          const approved = Number(u.manual_approved_count) || Number(u.total_submitted) || 0;
+          const earnings = Number(u.totalEarnings) || (Number(u.balance || 0) + Number(u.total_withdrawn || 0)) || Number(u.balance || 0);
+          return {
+            uid: u.uid || `user_${Math.random()}`,
+            username: u.username || (u.email ? u.email.split('@')[0] : 'Real Seller'),
+            email: u.email || '',
+            photoURL: u.photoURL || '',
+            totalEarnings: earnings,
+            balance: Number(u.balance) || 0,
+            manual_approved_count: approved,
+            total_submitted: Number(u.total_submitted) || 0,
+            badge: approved >= 100 ? 'VIP Champion' : approved >= 30 ? 'Diamond VIP' : 'Gold Partner',
+          };
+        })
+        .sort((a, b) => b.manual_approved_count - a.manual_approved_count || b.totalEarnings - a.totalEarnings);
+
+      return computed.slice(0, 8).map((s, idx) => ({ ...s, rank: idx + 1 }));
+    }
+
+    return [];
   }, [allUsers, topSellers]);
+
+  if (authMode !== 'none') {
+    return (
+      <AuthPageView
+        initialMode={authMode}
+        onBackToLanding={() => {
+          setAuthMode('none');
+          try {
+            if (window.location.pathname !== '/') {
+              window.history.pushState({}, '', '/');
+            }
+          } catch {}
+        }}
+      />
+    );
+  }
 
   const currentLangObj = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
 
@@ -156,9 +228,9 @@ export const GuestLandingView: React.FC = () => {
             <button
               onClick={() => {
                 hapticFeedback.medium();
-                setAuthModalOpen(true, 'login');
+                setAuthMode('login');
               }}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-white flex items-center gap-1 transition-all"
+              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-white flex items-center gap-1 transition-all cursor-pointer"
             >
               <LogIn className="w-3.5 h-3.5 text-indigo-400" />
               <span>{t.login || 'লগইন'}</span>
@@ -167,9 +239,9 @@ export const GuestLandingView: React.FC = () => {
             <button
               onClick={() => {
                 hapticFeedback.medium();
-                setAuthModalOpen(true, 'register');
+                setAuthMode('register');
               }}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-extrabold shadow-md shadow-indigo-500/25 flex items-center gap-1 transition-all active:scale-95"
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xs font-extrabold shadow-md shadow-indigo-500/25 flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
             >
               <UserPlus className="w-3.5 h-3.5" />
               <span className="hidden xs:inline">{t.register || 'সাইন আপ'}</span>
@@ -224,7 +296,7 @@ export const GuestLandingView: React.FC = () => {
               <button
                 onClick={() => {
                   hapticFeedback.heavy();
-                  setAuthModalOpen(true, 'register');
+                  setAuthMode('register');
                 }}
                 className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 hover:from-indigo-600 hover:to-pink-700 text-white font-extrabold text-sm shadow-xl shadow-indigo-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 group cursor-pointer"
               >
@@ -236,7 +308,7 @@ export const GuestLandingView: React.FC = () => {
               <button
                 onClick={() => {
                   hapticFeedback.light();
-                  setAuthModalOpen(true, 'login');
+                  setAuthMode('login');
                 }}
                 className="px-6 py-3.5 rounded-2xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-slate-200 font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
               >
@@ -287,7 +359,9 @@ export const GuestLandingView: React.FC = () => {
                 <Users className="w-4 h-4" />
                 <span>{language === 'bn' ? 'মোট নিবন্ধিত সেলার' : 'Registered Sellers'}</span>
               </div>
-              <p className="text-2xl font-black text-white">১৫,০০০+</p>
+              <p className="text-2xl font-black text-white">
+                {allUsers && allUsers.length > 0 ? `${allUsers.length}+` : '১৫,০০০+'}
+              </p>
               <span className="text-[10px] text-emerald-400 font-bold block">● সক্রিয় সম্প্রদায়</span>
             </div>
 
@@ -342,57 +416,65 @@ export const GuestLandingView: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {sellersList.map((seller, idx) => {
-              const approvedCount = Number(seller.manual_approved_count) || Number(seller.total_submitted) || (25 - idx * 2);
-              const totalEarnings = Number(seller.totalEarnings) || (approvedCount * 12);
-              const rank = idx + 1;
+          {sellersList && sellersList.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {sellersList.map((seller, idx) => {
+                const approvedCount = Number(seller.manual_approved_count) || Number(seller.total_submitted) || 0;
+                const totalEarnings = Number(seller.totalEarnings) || Number(seller.balance) || 0;
+                const rank = seller.rank || idx + 1;
 
-              return (
-                <div
-                  key={seller.uid || idx}
-                  className="p-3 rounded-2xl bg-slate-800/90 border border-slate-700/70 flex items-center justify-between text-xs hover:border-indigo-500/50 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-8 h-8 rounded-xl font-black text-xs flex items-center justify-center shrink-0 ${
-                        rank === 1
-                          ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-                          : rank === 2
-                          ? 'bg-slate-300 text-slate-900'
-                          : rank === 3
-                          ? 'bg-amber-700 text-white'
-                          : 'bg-slate-700 text-slate-300'
-                      }`}
-                    >
-                      {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`}
+                return (
+                  <div
+                    key={seller.uid || idx}
+                    className="p-3 rounded-2xl bg-slate-800/90 border border-slate-700/70 flex items-center justify-between text-xs hover:border-indigo-500/50 transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-8 h-8 rounded-xl font-black text-xs flex items-center justify-center shrink-0 ${
+                          rank === 1
+                            ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
+                            : rank === 2
+                            ? 'bg-slate-300 text-slate-900'
+                            : rank === 3
+                            ? 'bg-amber-700 text-white'
+                            : 'bg-slate-700 text-slate-300'
+                        }`}
+                      >
+                        {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`}
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-extrabold text-white">
+                            {seller.username || seller.email?.split('@')[0] || 'Top Seller'}
+                          </span>
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {language === 'bn' ? `অনুমোদিত: ${approvedCount} টি জিমেইল` : `Approved: ${approvedCount} Gmails`}
+                        </span>
+                      </div>
                     </div>
 
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-extrabold text-white">
-                          {seller.username || seller.name || 'Top Seller'}
-                        </span>
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-medium">
-                        {language === 'bn' ? `অনুমোদিত: ${approvedCount} টি জিমেইল` : `Approved: ${approvedCount} Gmails`}
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase">
+                        {language === 'bn' ? 'মোট আর্ন' : 'Total Earned'}
+                      </span>
+                      <span className="text-xs font-black text-emerald-400">
+                        ৳{totalEarnings.toLocaleString()}
                       </span>
                     </div>
                   </div>
-
-                  <div className="text-right">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">
-                      {language === 'bn' ? 'মোট আর্ন' : 'Total Earned'}
-                    </span>
-                    <span className="text-xs font-black text-emerald-400">
-                      ৳{totalEarnings.toLocaleString()}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="p-6 rounded-2xl bg-slate-800/60 border border-slate-700/60 text-center text-xs text-slate-400 font-medium">
+              {language === 'bn'
+                ? 'বর্তমানে কোনো সক্রিয় সেলার রেকর্ড নেই। এখনই অ্যাকাউন্ট তৈরি করে আপনার পজিশন অর্জন করুন!'
+                : 'No leaderboard records found yet. Create an account now to claim your spot!'}
+            </div>
+          )}
 
           <div className="p-3 rounded-2xl bg-indigo-950/50 border border-indigo-500/30 flex items-center justify-between text-xs text-indigo-200">
             <span className="font-semibold">
@@ -403,9 +485,9 @@ export const GuestLandingView: React.FC = () => {
             <button
               onClick={() => {
                 hapticFeedback.medium();
-                setAuthModalOpen(true, 'register');
+                setAuthMode('register');
               }}
-              className="text-amber-400 font-black hover:underline flex items-center gap-1"
+              className="text-amber-400 font-black hover:underline flex items-center gap-1 cursor-pointer"
             >
               <span>{language === 'bn' ? 'সাইন আপ করুন' : 'Sign Up Now'}</span>
               <ChevronRight className="w-3.5 h-3.5" />

@@ -13,8 +13,11 @@ import { AboutView } from './AboutView';
 import { ReviewsView } from './ReviewsView';
 import { AdminReviewsView } from './AdminReviewsView';
 import { AdminTopSellersView } from './AdminTopSellersView';
+import { SettingsView } from './SettingsView';
+import { ReferralLeaderboard } from './ReferralLeaderboard';
 import { LiveChatDrawer } from './LiveChatDrawer';
 import { NotificationDrawer } from './NotificationDrawer';
+import { SettingsDrawer } from './SettingsDrawer';
 import { AuthModal } from './AuthModal';
 import { GuestLandingView } from './GuestLandingView';
 import {
@@ -92,6 +95,15 @@ const MainLayout: React.FC = () => {
         {activeTab === 'reviews' && <ReviewsView />}
         {activeTab === 'admin_reviews' && <AdminReviewsView />}
         {activeTab === 'admin_top_sellers' && <AdminTopSellersView />}
+        {activeTab === 'referral_leaderboard' && <ReferralLeaderboard />}
+        {activeTab === 'settings' && (
+          <SettingsView
+            onOpenEditProfile={() => setIsEditProfileOpen(true)}
+            onOpenChangePass={() => setIsChangePassOpen(true)}
+            onOpenFAQ={() => setIsFAQOpen(true)}
+            onOpenContact={() => setIsContactOpen(true)}
+          />
+        )}
       </main>
 
       {/* Floating Action Buttons */}
@@ -119,6 +131,12 @@ const MainLayout: React.FC = () => {
       <AuthModal />
       <LiveChatDrawer />
       <NotificationDrawer />
+      <SettingsDrawer
+        onOpenEditProfile={() => setIsEditProfileOpen(true)}
+        onOpenChangePass={() => setIsChangePassOpen(true)}
+        onOpenFAQ={() => setIsFAQOpen(true)}
+        onOpenContact={() => setIsContactOpen(true)}
+      />
       <IOSInstallGuideModal isOpen={showIOSGuide} onClose={closeIOSGuide} />
 
       <EditProfileModal

@@ -17,7 +17,9 @@ import {
   Sparkles,
   Layers,
   Trophy,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { GmailType, TopSellerItem } from './types';
 

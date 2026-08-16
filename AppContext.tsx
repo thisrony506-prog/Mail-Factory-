@@ -118,6 +118,8 @@ interface AppContextType {
   setChatDrawerOpen: (open: boolean) => void;
   isNotifDrawerOpen: boolean;
   setNotifDrawerOpen: (open: boolean) => void;
+  isSettingsDrawerOpen: boolean;
+  setSettingsDrawerOpen: (open: boolean) => void;
   isRateModalOpen: boolean;
   setRateModalOpen: (open: boolean) => void;
   claimDailyStreak: () => Promise<{ success: boolean; streakCount: number }>;
@@ -137,6 +139,8 @@ export const TAB_TO_PATH: Record<ActiveTab, string> = {
   privacy: '/privacy',
   admin_reviews: '/admin-reviews',
   admin_top_sellers: '/admin-top-sellers',
+  settings: '/settings',
+  referral_leaderboard: '/referral-leaderboard',
 };
 
 export const PATH_TO_TAB: Record<string, ActiveTab> = {
@@ -151,6 +155,9 @@ export const PATH_TO_TAB: Record<string, ActiveTab> = {
   '/profile': 'profile',
   '/about': 'about',
   '/privacy': 'privacy',
+  '/settings': 'settings',
+  '/referral-leaderboard': 'referral_leaderboard',
+  '/referral': 'referral_leaderboard',
   '/admin-reviews': 'admin_reviews',
   '/admin/reviews': 'admin_reviews',
   '/admin-top-sellers': 'admin_top_sellers',
@@ -286,6 +293,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isWithdrawModalOpen, setWithdrawModalOpen] = useState<boolean>(false);
   const [isChatDrawerOpen, setChatDrawerOpen] = useState<boolean>(false);
   const [isNotifDrawerOpen, setNotifDrawerOpen] = useState<boolean>(false);
+  const [isSettingsDrawerOpen, setSettingsDrawerOpen] = useState<boolean>(false);
   const [isRateModalOpen, setRateModalOpen] = useState<boolean>(false);
   const appLogo = DEFAULT_LOGO;
 
@@ -512,9 +520,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  // Sync All Real Users from Firebase (for Referral List & Admin picker)
+  // Sync All Real Users from Firebase (for Referral List, Top Sellers & Admin picker)
   useEffect(() => {
-    if (!user) return;
     try {
       const usersRef = ref(db, 'users');
       const unsubscribe = onValue(
@@ -553,7 +560,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (e) {
       console.warn('Users listener error:', e);
     }
-  }, [user]);
+  }, []);
 
   // Auth & Profile Listener
   useEffect(() => {
@@ -1014,6 +1021,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setChatDrawerOpen,
         isNotifDrawerOpen,
         setNotifDrawerOpen,
+        isSettingsDrawerOpen,
+        setSettingsDrawerOpen,
         isRateModalOpen,
         setRateModalOpen,
         claimDailyStreak,

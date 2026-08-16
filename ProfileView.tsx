@@ -26,13 +26,15 @@ import {
   Camera,
   Users,
   Award,
+  Trophy,
   Sparkles,
   TrendingUp,
   Download,
   QrCode,
   Activity,
   Star,
-  Globe
+  Globe,
+  Settings
 } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import {
@@ -69,6 +71,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     setActiveTab,
     setChatDrawerOpen,
     setNotifDrawerOpen,
+    setSettingsDrawerOpen,
     claimDailyStreak,
     commissionPercent,
     signupBonusUser,
@@ -184,6 +187,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     <div className="max-w-2xl mx-auto px-4 py-4 pb-24 space-y-4">
       {/* Profile Header Card */}
       <div className="rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 text-white p-6 shadow-xl relative overflow-hidden text-center">
+        {/* Top Corner Settings Trigger */}
+        <button
+          onClick={() => {
+            hapticFeedback.light();
+            setActiveTab('settings');
+          }}
+          className="absolute top-4 right-4 z-20 p-2.5 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 text-amber-300 backdrop-blur-md shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
+          title="Account Settings / অ্যাকাউন্ট সেটিংস"
+        >
+          <Settings className="w-4 h-4 animate-spin-slow" />
+          <span className="text-xs font-bold text-white hidden sm:inline">
+            {language === 'bn' ? 'সেটিংস' : 'Settings'}
+          </span>
+        </button>
+
         {/* Background glow effects */}
         <div className="absolute -top-12 -right-12 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
         <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-amber-400/15 rounded-full blur-xl pointer-events-none" />
@@ -466,16 +484,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {/* Referral Hub V3 with Tabs */}
       <div className="rounded-3xl bg-white border border-slate-200 shadow-sm overflow-hidden">
         <div className="bg-gradient-to-r from-purple-700 via-indigo-700 to-blue-700 text-white p-5">
-          <div className="flex items-center gap-2.5 mb-2">
-            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
-              <Gift className="w-5 h-5 text-amber-300" />
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                <Gift className="w-5 h-5 text-amber-300" />
+              </div>
+              <div>
+                <h3 className="text-base font-black">{t.inviteAndEarn}</h3>
+                <p className="text-xs text-purple-200">
+                  {t.commission}: <span className="text-amber-300 font-bold">{commissionPercent}%</span> per referral
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-base font-black">{t.inviteAndEarn}</h3>
-              <p className="text-xs text-purple-200">
-                {t.commission}: <span className="text-amber-300 font-bold">{commissionPercent}%</span> per referral
-              </p>
-            </div>
+
+            <button
+              onClick={() => {
+                hapticFeedback.light();
+                setActiveTab('referral_leaderboard');
+              }}
+              className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 text-xs font-black shadow-md transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
+            >
+              <Trophy className="w-3.5 h-3.5" />
+              <span>{language === 'bn' ? 'লিডারবোর্ড' : 'Leaderboard'}</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-white/10">
@@ -669,286 +700,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         )}
       </div>
 
-      {/* Settings & Info Section */}
-      <div className="rounded-3xl bg-white border border-slate-200 p-2 shadow-sm divide-y divide-slate-100">
-        <div className="px-3 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-          {t.account}
-        </div>
-        <button
-          onClick={onOpenEditProfile}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
-              <User className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.editProfile}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Update name, photo, phone & wallet</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <button
-          onClick={() => setNotifDrawerOpen(true)}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-              <Bell className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.notifications}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Push and audit status alerts</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <button
-          onClick={onOpenChangePass}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-              <Key className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.changePassword}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Secure your account credential</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        {/* Language Selection Card */}
-        <div className="p-3 bg-slate-50/50 rounded-2xl my-1">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <Globe className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.languageTitle}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Select your preferred app language</span>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 pt-1">
-            {LANGUAGES.map((item) => (
-              <button
-                key={item.code}
-                onClick={() => {
-                  hapticFeedback.medium();
-                  setLanguage(item.code);
-                }}
-                className={`flex items-center justify-between px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all ${
-                  language === item.code
-                    ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span>{item.flag}</span>
-                  <span className="text-[11px]">{item.nativeName}</span>
-                </div>
-                {language === item.code && <Check className="w-3.5 h-3.5 text-white" />}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="px-3 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider pt-3">
-          {t.support} & Advanced
-        </div>
-        
-        {user && ['gmrony135@gmail.com', 'mailfactorybd@gmail.com'].includes(user.email || '') && (
-          <>
-            <button
-              onClick={() => setActiveTab('admin_top_sellers')}
-              className="w-full flex items-center justify-between p-3 text-left bg-amber-50/70 hover:bg-amber-100/70 border border-amber-200/80 rounded-2xl transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
-                  <Award className="w-4 h-4" />
-                </div>
-                <div>
-                  <h5 className="text-xs font-black text-amber-950">টপ ১০ সেলার ম্যানেজার (Admin)</h5>
-                  <span className="text-[10px] text-amber-800 font-medium">লিডারবোর্ডের সেরা ১০ জনের তালিকা সেট বা এডিট করুন</span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-amber-700" />
-            </button>
-
-            <button
-              onClick={() => setActiveTab('admin_reviews')}
-              className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
-                  <Shield className="w-4 h-4" />
-                </div>
-                <div>
-                  <h5 className="text-xs font-extrabold text-slate-800">Admin Review Moderation</h5>
-                  <span className="text-[10px] text-slate-400 font-medium">Approve or reject customer reviews</span>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
-            </button>
-          </>
-        )}
-        <button
-          onClick={() => setChatDrawerOpen(true)}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <Shield className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.liveChat}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Chat directly with admin team</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <button
-          onClick={() => setActiveTab('reviews')}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
-              <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">
-                {language === 'bn' ? 'কাস্টমার রিভিউ ও রেটিং' : 'User Reviews & Ratings'}
-              </h5>
-              <span className="text-[10px] text-slate-400 font-medium">
-                {language === 'bn' ? 'রিভিউ দেখুন অথবা আপনার মতামত দিন' : 'Read community reviews or submit yours'}
-              </span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <button
-          onClick={() => setActiveTab('history')}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
-              <Download className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">Payout Reports</h5>
-              <span className="text-[10px] text-slate-400 font-medium">View and download your history</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <button
-          onClick={onOpenFAQ}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-pink-100 text-pink-700 flex items-center justify-center">
-              <HelpCircle className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.faq}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Frequently asked questions</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <button
-          onClick={onOpenContact}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center">
-              <Mail className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.contactUs}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Telegram, WhatsApp & Official Email</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <div className="px-3 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider pt-3">
-          {t.info}
-        </div>
-        <button
-          onClick={() => setActiveTab('privacy')}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
-              <FileText className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.privacyPolicy}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Data protection & security terms</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <button
-          onClick={() => setActiveTab('about')}
-          className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 rounded-2xl transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-              <Info className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">{t.aboutUs}</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Mail Factory Version 3.2.0</span>
-            </div>
-          </div>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </button>
-      </div>
-
-      {/* PWA Install Button (Mobile View) */}
-      {isInstallable && (
-        <button
-          onClick={() => {
-            hapticFeedback.medium();
-            promptInstall();
-          }}
-          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-amber-950 text-xs font-black shadow-lg flex items-center justify-center gap-2 transition-all active:scale-98"
-        >
-          <Download className="w-4 h-4" />
-          <span>{language === 'bn' ? 'Mail Factory অ্যাপ ইনস্টল করুন' : 'Install Mail Factory App'}</span>
-        </button>
-      )}
-
-      {/* Logout Button */}
-      <button
-        onClick={handleLogout}
-        className="w-full py-3.5 rounded-2xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-black flex items-center justify-center gap-2 transition-all active:scale-98"
-      >
-        <LogOut className="w-4 h-4" />
-        <span>{t.logout}</span>
-      </button>
-
-      {/* Delete Account (Visual Only) */}
-      <button
-        onClick={() => {
-          alert(language === 'bn' ? 'অ্যাকাউন্ট ডিলিট করতে লাইভ চ্যাটে অ্যাডমিনের সাথে যোগাযোগ করুন।' : 'Please contact admin via Live Chat to delete your account.');
-        }}
-        className="w-full py-3.5 rounded-2xl text-slate-400 text-[11px] font-bold flex items-center justify-center gap-1.5 hover:text-rose-600 transition-colors"
-      >
-        <Trash2 className="w-3.5 h-3.5" />
-        <span>{language === 'bn' ? 'অ্যাকাউন্ট ডিলিট করুন' : 'Request Account Deletion'}</span>
-      </button>
     </div>
   );
 };

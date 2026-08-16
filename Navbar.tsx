@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from './AppContext';
 import { translations, LANGUAGES } from './i18n';
-import { Bell, MessageSquare, Wallet, Globe, Download, Check, X } from 'lucide-react';
+import { Bell, MessageSquare, Wallet, Globe, Download, Check, X, Settings } from 'lucide-react';
 import { usePWAInstall } from './usePWAInstall';
 import { hapticFeedback } from './haptics';
 
@@ -14,6 +14,7 @@ export const Navbar: React.FC = () => {
     unreadNotifsCount,
     setNotifDrawerOpen,
     setChatDrawerOpen,
+    setSettingsDrawerOpen,
     setAuthModalOpen,
     setWithdrawModalOpen,
     user,
@@ -168,7 +169,7 @@ export const Navbar: React.FC = () => {
           {/* Notification Bell */}
           <button
             onClick={() => setNotifDrawerOpen(true)}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 relative transition-all"
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 relative transition-all cursor-pointer"
             title="Notifications"
           >
             <Bell className="w-4 h-4 text-indigo-100" />
@@ -177,6 +178,18 @@ export const Navbar: React.FC = () => {
                 {unreadNotifsCount}
               </span>
             )}
+          </button>
+
+          {/* Settings Button in Top Corner */}
+          <button
+            onClick={() => {
+              hapticFeedback.light();
+              setActiveTab('settings');
+            }}
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            title="Settings / সেটিংস"
+          >
+            <Settings className="w-4 h-4 text-amber-300" />
           </button>
         </div>
       </div>
