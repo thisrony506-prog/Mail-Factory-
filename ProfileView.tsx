@@ -73,10 +73,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     copyText,
     allUsers,
     submissions,
-    emailNotifWithdrawal,
-    setEmailNotifWithdrawal,
-    emailNotifExchange,
-    setEmailNotifExchange,
   } = useApp();
 
   const t = translations[language];
@@ -599,48 +595,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             )}
           </div>
         )}
-      </div>
-
-      <div className="rounded-3xl bg-white border border-slate-200 p-2 shadow-sm divide-y divide-slate-100 mb-4 animate-in fade-in zoom-in-95 duration-700">
-        <div className="px-3 py-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-          Notification Settings
-        </div>
-        
-        <div className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-              <Bell className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">Withdrawal Success</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Get email alerts for payouts</span>
-            </div>
-          </div>
-          <button 
-            onClick={() => setEmailNotifWithdrawal(!emailNotifWithdrawal)}
-            className={`w-10 h-6 rounded-full relative transition-colors ${emailNotifWithdrawal ? 'bg-emerald-500' : 'bg-slate-300'}`}
-          >
-            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${emailNotifWithdrawal ? 'left-5' : 'left-1'}`} />
-          </button>
-        </div>
-
-        <div className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-              <Mail className="w-4 h-4" />
-            </div>
-            <div>
-              <h5 className="text-xs font-extrabold text-slate-800">New Exchange Request</h5>
-              <span className="text-[10px] text-slate-400 font-medium">Email updates on exchange status</span>
-            </div>
-          </div>
-          <button 
-            onClick={() => setEmailNotifExchange(!emailNotifExchange)}
-            className={`w-10 h-6 rounded-full relative transition-colors ${emailNotifExchange ? 'bg-emerald-500' : 'bg-slate-300'}`}
-          >
-            <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${emailNotifExchange ? 'left-5' : 'left-1'}`} />
-          </button>
-        </div>
       </div>
 
       {/* Settings & Info Section */}
