@@ -126,7 +126,7 @@ export interface FAQItem {
 
 
 export type ActiveTab = 'home' | 'exchange' | 'history' | 'sellers' | 'profile' | 'withdraw' | 'privacy' | 'about' | 'reviews' | 'admin_reviews' | 'admin_top_sellers';
-export type Language = 'bn' | 'en';
+export type Language = 'bn' | 'en' | 'ar' | 'hi' | 'es' | 'fr';
 
 export interface TopSellerItem {
   uid: string;

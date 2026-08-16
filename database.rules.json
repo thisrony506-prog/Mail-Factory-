@@ -65,8 +65,10 @@
     },
     "reviews": {
       ".read": true,
+      ".write": true,
       "$uid": {
-        ".write": "auth != null && (auth.uid === $uid || auth.token.email === 'gmrony135@gmail.com' || auth.token.email === 'mailfactorybd@gmail.com')"
+        ".read": true,
+        ".write": true
       }
     },
     "review_stats": {

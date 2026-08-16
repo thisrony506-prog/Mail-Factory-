@@ -123,6 +123,65 @@ interface AppContextType {
   copyText: (text: string, label?: string) => Promise<boolean>;
 }
 
+export const TAB_TO_PATH: Record<ActiveTab, string> = {
+  home: '/',
+  exchange: '/exchange',
+  history: '/history',
+  sellers: '/sellers',
+  reviews: '/reviews',
+  withdraw: '/withdraw',
+  profile: '/profile',
+  about: '/about',
+  privacy: '/privacy',
+  admin_reviews: '/admin-reviews',
+  admin_top_sellers: '/admin-top-sellers',
+};
+
+export const PATH_TO_TAB: Record<string, ActiveTab> = {
+  '/': 'home',
+  '/home': 'home',
+  '/exchange': 'exchange',
+  '/history': 'history',
+  '/sellers': 'sellers',
+  '/top-sellers': 'sellers',
+  '/reviews': 'reviews',
+  '/withdraw': 'withdraw',
+  '/profile': 'profile',
+  '/about': 'about',
+  '/privacy': 'privacy',
+  '/admin-reviews': 'admin_reviews',
+  '/admin/reviews': 'admin_reviews',
+  '/admin-top-sellers': 'admin_top_sellers',
+  '/admin/sellers': 'admin_top_sellers',
+};
+
+const getInitialTabFromUrl = (): ActiveTab => {
+  try {
+    const pathname = window.location.pathname.toLowerCase().replace(/\/$/, '') || '/';
+    if (PATH_TO_TAB[pathname]) {
+      return PATH_TO_TAB[pathname];
+    }
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam) {
+      const formatted = `/${tabParam.toLowerCase().replace(/^\//, '')}`;
+      if (PATH_TO_TAB[formatted]) {
+        return PATH_TO_TAB[formatted];
+      }
+    }
+    const hash = window.location.hash.replace('#', '').toLowerCase();
+    if (hash) {
+      const formatted = `/${hash.replace(/^\//, '')}`;
+      if (PATH_TO_TAB[formatted]) {
+        return PATH_TO_TAB[formatted];
+      }
+    }
+  } catch (e) {
+    console.warn('URL parsing error:', e);
+  }
+  return 'home';
+};
+
 const AppContext = createContext<AppContextType | null>(null);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -132,7 +191,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [language, setLanguage] = useState<Language>(() => {
     return (localStorage.getItem('mf_lang') as Language) || 'bn';
   });
-  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>(getInitialTabFromUrl);
+
+  const setActiveTab = useCallback((tab: ActiveTab) => {
+    setActiveTabState(tab);
+    try {
+      const targetPath = TAB_TO_PATH[tab] || '/';
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ tab }, '', targetPath);
+      }
+    } catch (e) {
+      console.warn('History pushState error:', e);
+    }
+  }, []);
+
+  // Sync activeTab when user navigates using browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const currentTab = getInitialTabFromUrl();
+      setActiveTabState(currentTab);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
   const [levels, setLevels] = useState<LevelConfig[]>(DEFAULT_LEVELS);
   const [reviewShifts, setReviewShifts] = useState<Record<string, ShiftInfo>>(DEFAULT_SHIFTS);
   const [paymentMethods, setPaymentMethods] = useState<Record<string, PaymentMethodConfig>>(DEFAULT_PAYMENT_METHODS);

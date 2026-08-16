@@ -24,17 +24,17 @@ export const HomeReviewsPreview: React.FC = () => {
             id: k,
           }));
 
-          const approved = allList.filter((r) => r.status === 'approved');
+          const published = allList.filter((r) => r.status !== 'rejected');
           let sum = 0;
-          approved.forEach((r) => {
+          published.forEach((r) => {
             sum += Number(r.rating) || 5;
           });
 
-          setTotalCount(approved.length);
-          setAvgRating(approved.length > 0 ? sum / approved.length : 5.0);
+          setTotalCount(published.length);
+          setAvgRating(published.length > 0 ? sum / published.length : 5.0);
 
           // Top 2 latest reviews
-          const sorted = [...approved].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          const sorted = [...published].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
           setReviews(sorted.slice(0, 2));
         } else {
           setReviews([]);
