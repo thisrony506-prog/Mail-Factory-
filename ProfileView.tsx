@@ -150,8 +150,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     }
   };
 
-  // Calculate my referred friends
+  // Calculate my referred friends and earnings breakdown per friend
   const myFriends = allUsers.filter((u) => u.referredBy === user?.uid);
+
+  const totalRefEarnings = React.useMemo(() => {
+    return myFriends.reduce((acc, friend) => {
+      const friendApproved = Number(friend.manual_approved_count) || Number(friend.total_submitted) || 0;
+      const friendEarnings = Number(friend.totalEarnings) || (friendApproved * 10);
+      const salesComm = (friendEarnings * commissionPercent) / 100;
+      const bonus = signupBonusUser || 5;
+      return acc + bonus + salesComm;
+    }, 0);
+  }, [myFriends, commissionPercent, signupBonusUser]);
 
   // Submissions stats
   const totalSubCount = profile?.total_submitted || submissions.length;
@@ -565,7 +575,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
         ) : (
           /* Tab 2: My Friends */
-          <div className="p-4 space-y-2 max-h-72 overflow-y-auto">
+          <div className="p-4 space-y-3 max-h-80 overflow-y-auto">
             {myFriends.length === 0 ? (
               <div className="text-center py-6 text-slate-400 text-xs font-bold">
                 <Users className="w-8 h-8 mx-auto mb-1.5 opacity-30 text-indigo-600" />
@@ -575,25 +585,85 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 </p>
               </div>
             ) : (
-              myFriends.map((friend, idx) => (
-                <div
-                  key={friend.uid || idx}
-                  className="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">
-                      {(friend.username || 'U').charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <span className="font-extrabold text-slate-800 block">{friend.username}</span>
-                      <span className="text-[10px] text-slate-400 font-mono">{friend.email}</span>
-                    </div>
+              <>
+                {/* Overall Summary Bar */}
+                <div className="p-3 rounded-2xl bg-indigo-50/80 border border-indigo-100 flex items-center justify-between text-xs mb-1">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">
+                      {language === 'bn' ? 'মোট রেফারকৃত বন্ধু' : 'Total Referred Friends'}
+                    </span>
+                    <span className="text-sm font-black text-indigo-700">{myFriends.length} জন</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-extrabold">
-                    Active
-                  </span>
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block">
+                      {language === 'bn' ? 'বন্ধুদের থেকে মোট আয়' : 'Total Earned from Friends'}
+                    </span>
+                    <span className="text-sm font-black text-emerald-600">৳{totalRefEarnings.toFixed(2)}</span>
+                  </div>
                 </div>
-              ))
+
+                {/* Friend Cards List */}
+                {myFriends.map((friend, idx) => {
+                  const friendApproved = Number(friend.manual_approved_count) || Number(friend.total_submitted) || 0;
+                  const friendEarnings = Number(friend.totalEarnings) || (friendApproved * 10);
+                  const salesCommission = (friendEarnings * commissionPercent) / 100;
+                  const regBonus = signupBonusUser || 5;
+                  const totalIncomeFromFriend = regBonus + salesCommission;
+
+                  return (
+                    <div
+                      key={friend.uid || idx}
+                      className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-50 to-indigo-50/30 border border-slate-200/80 shadow-sm hover:border-indigo-200 transition-all space-y-2.5"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-extrabold flex items-center justify-center text-xs shadow-sm">
+                            {(friend.username || 'U').charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <span className="font-extrabold text-slate-900 block text-xs">{friend.username}</span>
+                            <span className="text-[10px] text-slate-500 font-mono">{friend.email}</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block">
+                            {language === 'bn' ? 'মোট আয়' : 'Total Income'}
+                          </span>
+                          <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200/80 inline-block shadow-2xs">
+                            ৳{totalIncomeFromFriend.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Income Breakdown Badges */}
+                      <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-200/60 text-[11px]">
+                        <div className="p-2 rounded-xl bg-white border border-slate-100 flex items-center justify-between">
+                          <span className="text-slate-500 font-medium">
+                            {language === 'bn' ? 'রেজিস্ট্রেশন বোনাস:' : 'Reg. Bonus:'}
+                          </span>
+                          <span className="font-extrabold text-indigo-700">৳{regBonus}</span>
+                        </div>
+                        <div className="p-2 rounded-xl bg-white border border-slate-100 flex items-center justify-between">
+                          <span className="text-slate-500 font-medium">
+                            {language === 'bn' ? `কমিশন (${commissionPercent}%):` : `Comm. (${commissionPercent}%):`}
+                          </span>
+                          <span className="font-extrabold text-emerald-700">৳{salesCommission.toFixed(2)}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5 font-medium">
+                        <span>
+                          {language === 'bn' ? `অনুমোদিত জিমেইল: ${friendApproved} টি` : `Approved Gmails: ${friendApproved}`}
+                        </span>
+                        <span className="text-emerald-600 font-bold flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          {language === 'bn' ? 'সক্রিয় রেফারেল' : 'Active Referral'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
             )}
           </div>
         )}
