@@ -37,7 +37,11 @@ import {
   LogIn,
   Key,
   Sparkles,
+  Star,
+  Quote,
 } from 'lucide-react';
+import { onValue } from 'firebase/database';
+import { Review } from './types';
 
 interface AuthPageViewProps {
   initialMode?: 'register' | 'login';
@@ -62,6 +66,26 @@ export const AuthPageView: React.FC<AuthPageViewProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState<boolean>(false);
+
+  // Live real reviews from Firebase
+  const [liveReviews, setLiveReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    try {
+      const reviewsRef = ref(db, 'reviews');
+      const unsubscribe = onValue(reviewsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && typeof data === 'object') {
+          const list: Review[] = Object.keys(data)
+            .map((k) => ({ ...data[k], id: k }))
+            .filter((r) => r.status !== 'rejected')
+            .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          setLiveReviews(list);
+        }
+      });
+      return () => unsubscribe();
+    } catch {}
+  }, []);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState<boolean>(false);
 
   // Auto detect referral code from URL search param
@@ -696,6 +720,47 @@ export const AuthPageView: React.FC<AuthPageViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Live Customer Reviews Trust Showcase on Auth Page */}
+        {liveReviews.length > 0 && (
+          <div className="w-full max-w-md mt-6 p-4 rounded-3xl bg-slate-800/60 border border-slate-700/70 backdrop-blur-md space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-black text-amber-300">
+                <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                <span>{language === 'bn' ? 'সেলারদের সাম্প্রতিক রিভিউ' : 'Recent Seller Reviews'}</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-bold">
+                5.0 ★ ({liveReviews.length} {language === 'bn' ? 'টি রিভিউ' : 'reviews'})
+              </span>
+            </div>
+
+            <div className="space-y-2">
+              {liveReviews.slice(0, 2).map((rev) => (
+                <div key={rev.id} className="p-3 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-indigo-600/80 text-white font-bold text-[10px] flex items-center justify-center overflow-hidden">
+                        {rev.userPhoto ? (
+                          <img src={rev.userPhoto} alt={rev.userName} className="w-full h-full object-cover" />
+                        ) : (
+                          rev.userName?.charAt(0).toUpperCase() || 'U'
+                        )}
+                      </div>
+                      <span className="text-xs font-extrabold text-white truncate max-w-[130px]">{rev.userName}</span>
+                      {rev.isVerified && <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0" />}
+                    </div>
+                    <div className="flex items-center text-amber-400 text-[10px]">
+                      {'★'.repeat(rev.rating || 5)}
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-300 font-normal italic leading-relaxed line-clamp-2">
+                    "{rev.text}"
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Security Badge Footer */}
         <div className="text-center mt-6 text-[11px] text-slate-500 flex items-center justify-center gap-1.5 font-medium">

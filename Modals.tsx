@@ -4,6 +4,9 @@ import { translations } from './i18n';
 import { uploadToImgBB } from './imgbb';
 import {
   auth,
+  db,
+  ref,
+  set,
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
@@ -516,22 +519,45 @@ export const RateAppModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
 }> = ({ isOpen, onClose }) => {
-  const { language } = useApp();
+  const { language, user, profile, addNotification } = useApp();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
+  const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0) return;
     setSubmitted(true);
     localStorage.setItem('mf_has_rated', '1');
+
+    if (user) {
+      try {
+        const reviewData = {
+          id: user.uid,
+          userId: user.uid,
+          userName: profile?.username || user.displayName || user.email?.split('@')[0] || 'Member',
+          userPhoto: profile?.photoURL || user.photoURL || '',
+          rating,
+          text: comment.trim() || (language === 'bn' ? 'অসাধারণ সার্ভিস এবং দ্রুত পেআউট!' : 'Great service and quick payouts!'),
+          status: 'approved',
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          isVerified: Boolean(profile?.total_withdrawn && profile.total_withdrawn > 0),
+        };
+        await set(ref(db, `reviews/${user.uid}`), reviewData);
+      } catch (err) {
+        console.warn('Could not persist rate modal to firebase:', err);
+      }
+    }
+
     setTimeout(() => {
       onClose();
       setSubmitted(false);
       setRating(0);
-    }, 2000);
+      setComment('');
+    }, 1800);
   };
 
   return (
@@ -565,7 +591,7 @@ export const RateAppModal: React.FC<{
 
           {!submitted ? (
             <>
-              <div className="flex items-center justify-center gap-2 py-4">
+              <div className="flex items-center justify-center gap-2 py-3">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -586,6 +612,16 @@ export const RateAppModal: React.FC<{
                 ))}
               </div>
 
+              {rating > 0 && (
+                <input
+                  type="text"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder={language === 'bn' ? 'মতামত লিখুন (ঐচ্ছিক)...' : 'Write a short feedback (optional)...'}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500"
+                />
+              )}
+
               <button
                 onClick={handleSubmit}
                 disabled={rating === 0}
@@ -604,7 +640,7 @@ export const RateAppModal: React.FC<{
                 <CheckCircle className="w-6 h-6" />
               </div>
               <p className="font-bold text-slate-800">
-                {language === 'bn' ? 'ধন্যবাদ!' : 'Thank you!'}
+                {language === 'bn' ? 'ধন্যবাদ! রেটিং সংরক্ষিত হয়েছে।' : 'Thank you! Rating saved.'}
               </p>
             </div>
           )}

@@ -113,16 +113,23 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
           {/* Left Area: 3-Line Menu Button + Brand & Logo */}
           <div className="flex items-center gap-2.5">
+            {/* Modern High-End Menu Button */}
             <button
               onClick={() => {
-                hapticFeedback.light();
+                hapticFeedback.medium();
                 setSettingsDrawerOpen(true);
               }}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-white transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 flex items-center justify-center"
+              className="w-10 h-10 rounded-xl bg-gradient-to-b from-white/15 to-white/5 hover:from-amber-400/20 hover:to-white/15 border border-white/20 hover:border-amber-300/50 shadow-md hover:shadow-amber-500/20 backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shrink-0 flex flex-col items-center justify-center gap-1.5 p-2 group relative overflow-hidden"
               title="Menu / মেনু"
               aria-label="Open side menu"
             >
-              <Menu className="w-5 h-5 text-amber-300" />
+              {/* Subtle hover gradient glow ring */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/0 via-amber-300/10 to-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+              {/* Modern 3-bar precision tiered menu lines */}
+              <span className="w-5 h-[2.5px] rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-400 shadow-2xs group-hover:w-5 transition-all duration-300" />
+              <span className="w-3.5 h-[2.5px] rounded-full bg-gradient-to-r from-amber-200 via-amber-300 to-amber-400 shadow-2xs group-hover:w-5 group-hover:from-amber-300 group-hover:to-amber-500 transition-all duration-300 self-start ml-0.5 group-hover:ml-0 group-hover:self-center" />
+              <span className="w-5 h-[2.5px] rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 shadow-2xs group-hover:w-4 transition-all duration-300" />
             </button>
 
             <button
@@ -666,17 +673,29 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {isInstallable && (
                     <button
                       onClick={() => closeAndExecute(promptInstall)}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold transition-all cursor-pointer"
+                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 border border-indigo-200 text-indigo-950 font-bold transition-all cursor-pointer shadow-xs"
                     >
                       <div className="flex items-center gap-2.5">
-                        <div className="p-1.5 rounded-lg bg-amber-200 text-amber-900">
-                          <Download className="w-4 h-4" />
+                        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 p-0.5 shadow-xs shrink-0">
+                          <img
+                            src={appLogo || '/app-logo.png'}
+                            alt="Mail Factory"
+                            className="w-full h-full object-cover rounded-[6px]"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/app-logo.png';
+                            }}
+                          />
                         </div>
-                        <span className="text-xs font-bold">
-                          {language === 'bn' ? 'অ্যাপ ইনস্টল করুন' : 'Install Mail Factory App'}
-                        </span>
+                        <div className="text-left">
+                          <span className="text-xs font-black block text-indigo-950">Mail Factory App</span>
+                          <span className="text-[10px] text-indigo-600 font-semibold block">
+                            {language === 'bn' ? 'হোমস্ক্রিনে ইনস্টল করুন' : 'Install to Home Screen'}
+                          </span>
+                        </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 text-amber-700" />
+                      <div className="p-1 rounded-lg bg-indigo-600 text-white">
+                        <Download className="w-3.5 h-3.5" />
+                      </div>
                     </button>
                   )}
 

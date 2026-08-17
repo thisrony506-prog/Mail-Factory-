@@ -29,7 +29,8 @@ import {
 } from './Modals';
 import { IOSInstallGuideModal } from './IOSInstallGuideModal';
 import { usePWAInstall } from './usePWAInstall';
-import { MessageSquare, Bell, Loader2 } from 'lucide-react';
+import { LoadingScreen } from './LoadingScreen';
+import { MessageSquare, Bell } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const {
@@ -60,14 +61,9 @@ const MainLayout: React.FC = () => {
     return () => window.removeEventListener('hashchange', handleHashCheck);
   }, [setActiveTab]);
 
-  // Show loading spinner while auth state is resolving
+  // Show custom branded loading screen while auth state is resolving
   if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white space-y-3">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-        <p className="text-xs font-bold text-slate-400">{language === 'bn' ? 'লোড হচ্ছে...' : 'Loading...'}</p>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // If user is not logged in, render the Guest Landing / Welcome Page

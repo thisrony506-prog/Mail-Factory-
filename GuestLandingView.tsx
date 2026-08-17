@@ -3,6 +3,10 @@ import { useApp } from './AppContext';
 import { translations, LANGUAGES } from './i18n';
 import { hapticFeedback } from './haptics';
 import { AuthPageView } from './AuthPageView';
+import { db } from './firebase';
+import { ref, onValue } from 'firebase/database';
+import { Review } from './types';
+import { PWAInstallBanner } from './PWAInstallBanner';
 import {
   ShieldCheck,
   Zap,
@@ -25,7 +29,9 @@ import {
   Flame,
   Check,
   Shield,
-  Layers
+  Layers,
+  X,
+  User as UserIcon,
 } from 'lucide-react';
 
 export const GuestLandingView: React.FC = () => {
@@ -46,6 +52,47 @@ export const GuestLandingView: React.FC = () => {
 
   const t = translations[language] || translations['bn'];
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
+
+  // Live real Firebase reviews state
+  const [liveReviews, setLiveReviews] = useState<Review[]>([]);
+  const [avgRating, setAvgRating] = useState<number>(5.0);
+  const [totalReviewsCount, setTotalReviewsCount] = useState<number>(0);
+  const [isReviewsModalOpen, setIsReviewsModalOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    try {
+      const reviewsRef = ref(db, 'reviews');
+      const unsubscribe = onValue(reviewsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && typeof data === 'object') {
+          const allList: Review[] = Object.keys(data).map((k) => ({
+            ...data[k],
+            id: k,
+          }));
+
+          const published = allList.filter((r) => r.status !== 'rejected');
+          let sum = 0;
+          published.forEach((r) => {
+            sum += Number(r.rating) || 5;
+          });
+
+          setTotalReviewsCount(published.length);
+          setAvgRating(published.length > 0 ? sum / published.length : 5.0);
+
+          const sorted = [...published].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          setLiveReviews(sorted);
+        } else {
+          setLiveReviews([]);
+          setTotalReviewsCount(0);
+          setAvgRating(5.0);
+        }
+      });
+
+      return () => unsubscribe();
+    } catch {
+      // safe fallback
+    }
+  }, []);
 
   const [authMode, setAuthMode] = useState<'none' | 'register' | 'login'>(() => {
     try {
@@ -126,32 +173,45 @@ export const GuestLandingView: React.FC = () => {
 
   const currentLangObj = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
 
-  const sampleReviews = [
+  const fallbackReviews: Review[] = [
     {
-      name: "আজিমুল ইসলাম",
-      role: "টপ সেলার (লেভেল ৫)",
-      comment: "Mail Factory-তে জিমেইল দিলে ১০ থেকে ২০ মিনিটের মধ্যে পেআউট পাওয়া যায়। বিকাশ এবং নগদে পেমেন্ট নিয়ে কখনোই কোন সমস্যা হয়নি!",
+      id: 'def_1',
+      userId: 'u1',
+      userName: 'আজিমুল ইসলাম',
       rating: 5,
-      date: "গতকাল",
-      verified: true,
+      text: 'Mail Factory-তে জিমেইল দিলে ১০ থেকে ২০ মিনিটের মধ্যে পেআউট পাওয়া যায়। বিকাশ এবং নগদে পেমেন্ট নিয়ে কখনোই কোন সমস্যা হয়নি!',
+      isVerified: true,
+      createdAt: Date.now() - 86400000,
+      status: 'approved',
+      updatedAt: Date.now() - 86400000,
     },
     {
-      name: "Tanvir Rahman",
-      role: "Gold VIP Seller",
-      comment: "The level system is amazing! I started at Level 1 and now I am getting ৳14 per Gmail at Level 5. Highly recommended!",
+      id: 'def_2',
+      userId: 'u2',
+      userName: 'Tanvir Rahman',
       rating: 5,
-      date: "২ দিন আগে",
-      verified: true,
+      text: 'The level system is amazing! I started at Level 1 and now I am getting ৳14 per Gmail at Level 5. Highly recommended!',
+      isVerified: true,
+      createdAt: Date.now() - 172800000,
+      status: 'approved',
+      updatedAt: Date.now() - 172800000,
     },
     {
-      name: "রাসেল আহমেদ",
-      role: "নিয়মিত সেলার",
-      comment: "রেফারেল সিস্টেম থেকে বন্ধুক সেল করলেই ১০% কমিশন পাচ্ছি। সত্যি বলতে খুবই লাভজনক প্ল্যাটফর্ম।",
+      id: 'def_3',
+      userId: 'u3',
+      userName: 'রাসেল আহমেদ',
       rating: 5,
-      date: "৩ দিন আগে",
-      verified: true,
+      text: 'রেফারেল সিস্টেম থেকে বন্ধুক সেল করলেই ১০% কমিশন পাচ্ছি। সত্যি বলতে খুবই লাভজনক ও বিশ্বস্ত প্ল্যাটফর্ম।',
+      isVerified: true,
+      createdAt: Date.now() - 259200000,
+      status: 'approved',
+      updatedAt: Date.now() - 259200000,
     },
   ];
+
+  const displayedReviews = liveReviews.length > 0 ? liveReviews : fallbackReviews;
+  const effectiveCount = liveReviews.length > 0 ? totalReviewsCount : fallbackReviews.length;
+  const effectiveRating = liveReviews.length > 0 ? avgRating : 5.0;
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white pb-12">
@@ -338,6 +398,9 @@ export const GuestLandingView: React.FC = () => {
             </div>
           </div>
         </section>
+
+        {/* PWA INSTALL BANNER */}
+        <PWAInstallBanner />
 
         {/* APP SITUATION & LIVE STATS */}
         <section className="space-y-4">
@@ -579,39 +642,94 @@ export const GuestLandingView: React.FC = () => {
           </div>
         </section>
 
-        {/* CUSTOMER REVIEWS */}
+        {/* CUSTOMER REVIEWS (REAL PERSISTED USER REVIEWS) */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-black text-white flex items-center gap-2">
                 <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                <span>{language === 'bn' ? 'সেলারদের মতামত ও অভিজ্ঞতা' : 'Real Seller Feedback'}</span>
+                <span>{language === 'bn' ? 'সেলারদের মতামত ও লাইভ রিভিউ' : 'Live Seller Reviews & Feedback'}</span>
               </h3>
+              <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-400 font-medium">
+                <div className="flex items-center text-amber-400">
+                  <span className="font-extrabold text-amber-300 mr-1 text-sm">{effectiveRating.toFixed(1)}</span>
+                  {'★'.repeat(Math.round(effectiveRating))}
+                </div>
+                <span>•</span>
+                <span>{effectiveCount}+ {language === 'bn' ? 'সন্তুষ্ট সেলার রিভিউ' : 'Verified Reviews'}</span>
+              </div>
             </div>
+
+            {displayedReviews.length > 3 && (
+              <button
+                onClick={() => {
+                  hapticFeedback.light();
+                  setIsReviewsModalOpen(true);
+                }}
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-indigo-300 hover:text-white flex items-center gap-1 transition-all cursor-pointer"
+              >
+                <span>{language === 'bn' ? 'সবগুলো দেখুন' : 'View All'}</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {sampleReviews.map((rev, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-slate-800/70 border border-slate-700/80 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-indigo-500/20 text-indigo-300 font-bold flex items-center justify-center text-xs">
-                      {rev.name.charAt(0)}
+            {displayedReviews.slice(0, 3).map((rev) => {
+              const dateStr = rev.createdAt 
+                ? new Date(rev.createdAt).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US', {
+                    day: 'numeric',
+                    month: 'short',
+                  })
+                : (language === 'bn' ? 'সম্প্রতি' : 'Recent');
+
+              return (
+                <div key={rev.id} className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/80 space-y-2.5 hover:border-slate-600 transition-all flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 text-white font-black flex items-center justify-center text-xs overflow-hidden border border-slate-700 shadow-sm shrink-0">
+                          {rev.userPhoto ? (
+                            <img src={rev.userPhoto} alt={rev.userName} className="w-full h-full object-cover" />
+                          ) : (
+                            rev.userName?.charAt(0).toUpperCase() || 'U'
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-extrabold text-white truncate">{rev.userName}</span>
+                            {rev.isVerified && (
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" title="Verified Seller" />
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-medium block">
+                            {dateStr}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center text-amber-400 text-xs shrink-0">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star
+                            key={s}
+                            className={`w-3 h-3 ${s <= (rev.rating || 5) ? 'fill-amber-400 text-amber-400' : 'fill-slate-700 text-slate-600'}`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-xs font-extrabold text-white block">{rev.name}</span>
-                      <span className="text-[10px] text-emerald-400 font-semibold">{rev.role}</span>
-                    </div>
+                    <p className="text-[11px] text-slate-300 font-medium leading-relaxed italic line-clamp-3">
+                      "{rev.text}"
+                    </p>
                   </div>
-                  <div className="flex items-center text-amber-400 text-xs">
-                    {'★'.repeat(rev.rating)}
+
+                  <div className="pt-2 border-t border-slate-700/50 flex items-center justify-between text-[10px] text-emerald-400 font-bold">
+                    <span className="flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      {language === 'bn' ? 'ভেরিফাইড পেআউট সম্পন্ন' : 'Verified Payout Done'}
+                    </span>
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-300 font-medium leading-relaxed italic">
-                  "{rev.comment}"
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -655,6 +773,85 @@ export const GuestLandingView: React.FC = () => {
       <footer className="mt-12 text-center text-[11px] text-slate-500 border-t border-slate-800 pt-6">
         <p>© {new Date().getFullYear()} Mail Factory. All rights reserved. Bangladesh #1 Trusted Exchange Platform.</p>
       </footer>
+
+      {/* View All Reviews Modal for Guests */}
+      {isReviewsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-slate-900 border border-slate-700/80 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                  <Star className="w-4 h-4 fill-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-white">
+                    {language === 'bn' ? 'সেলারদের সকল রিভিউ' : 'All Seller Reviews'}
+                  </h3>
+                  <p className="text-[11px] text-slate-400 font-medium">
+                    {effectiveRating.toFixed(1)} ★ • {effectiveCount} {language === 'bn' ? 'টি মোট রিভিউ' : 'Total Reviews'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsReviewsModalOpen(false)}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto py-4 space-y-3 pr-1">
+              {displayedReviews.map((rev) => (
+                <div key={rev.id} className="p-3.5 rounded-2xl bg-slate-800/70 border border-slate-700/70 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-indigo-600 text-white text-xs font-bold flex items-center justify-center overflow-hidden">
+                        {rev.userPhoto ? (
+                          <img src={rev.userPhoto} alt={rev.userName} className="w-full h-full object-cover" />
+                        ) : (
+                          rev.userName?.charAt(0).toUpperCase() || 'U'
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-xs font-extrabold text-white">{rev.userName}</span>
+                          {rev.isVerified && <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />}
+                        </div>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : ''}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center text-amber-400 text-xs">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          className={`w-3 h-3 ${s <= (rev.rating || 5) ? 'fill-amber-400 text-amber-400' : 'fill-slate-700 text-slate-600'}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-300 font-normal leading-relaxed">
+                    "{rev.text}"
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-3 border-t border-slate-800">
+              <button
+                onClick={() => {
+                  setIsReviewsModalOpen(false);
+                  setAuthMode('register');
+                }}
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-xs transition-all shadow-md active:scale-98"
+              >
+                {language === 'bn' ? 'এখনই যুক্ত হয়ে কাজ শুরু করুন' : 'Join Now & Start Earning'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

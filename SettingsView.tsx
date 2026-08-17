@@ -46,6 +46,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const {
     user,
     profile,
+    appLogo,
     language,
     setLanguage,
     setActiveTab,
@@ -561,22 +562,31 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 hapticFeedback.medium();
                 promptInstall();
               }}
-              className="w-full flex items-center justify-between py-3 px-2 text-left bg-emerald-50/70 hover:bg-emerald-100/70 rounded-2xl transition-all cursor-pointer border border-emerald-200/80 mt-1"
+              className="w-full flex items-center justify-between p-3 text-left bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 rounded-2xl transition-all cursor-pointer border border-indigo-200 shadow-xs mt-1"
             >
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                  <Download className="w-4 h-4" />
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 p-0.5 shadow-sm shrink-0">
+                  <img
+                    src={appLogo || '/app-logo.png'}
+                    alt="Mail Factory"
+                    className="w-full h-full object-cover rounded-[10px]"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/app-logo.png';
+                    }}
+                  />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black text-emerald-950">
-                    {language === 'bn' ? 'অফিশিয়াল অ্যাপ ইনস্টল করুন' : 'Install Official App'}
-                  </h3>
-                  <p className="text-[10px] text-emerald-800 font-medium">
-                    {language === 'bn' ? 'দ্রুত অ্যাক্সেস ও হোমস্ক্রিন পিন' : 'Add Mail Factory to home screen'}
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-xs font-black text-indigo-950">Mail Factory App</h3>
+                  </div>
+                  <p className="text-[10px] text-indigo-700 font-semibold">
+                    {language === 'bn' ? 'হোমস্ক্রিনে যোগ করুন • এক ক্লিকে ওপেন' : 'Install to Home Screen for instant access'}
                   </p>
                 </div>
               </div>
-              <ChevronRight className="w-4 h-4 text-emerald-700" />
+              <div className="p-2 rounded-xl bg-indigo-600 text-white shadow-xs">
+                <Download className="w-4 h-4" />
+              </div>
             </button>
           )}
         </div>

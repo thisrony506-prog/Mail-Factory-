@@ -71,8 +71,26 @@
       }
     </script>
   </head>
-  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
-    <div id="root"></div>
+  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+    <div id="root">
+      <div style="min-height: 100vh; background-color: #020617; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; color: #f8fafc; text-align: center; padding: 24px;">
+        <div style="position: relative; width: 88px; height: 88px; border-radius: 24px; background: linear-gradient(135deg, #6366f1, #a855f7); padding: 2px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5); overflow: hidden;">
+          <img src="/app-logo.png" alt="Mail Factory Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 22px; background: #0f172a;" onerror="this.onerror=null;this.src='https://z-cdn-media.chatglm.cn/files/254f7f82-610d-4700-abc8-2e10435c149a.png?auth_key=1874890147-5ce8a86650d0488299a25b07660a73f8-0-b25e70b5ad3109adec869d78d8584440';" />
+        </div>
+        <h1 style="font-size: 22px; font-weight: 900; margin: 0 0 6px 0; background: linear-gradient(to right, #ffffff, #c7d2fe); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Mail Factory</h1>
+        <p style="font-size: 12px; font-weight: 600; color: #94a3b8; margin: 0 0 24px 0;">লোড হচ্ছে...</p>
+        <div style="width: 180px; height: 5px; background: #1e293b; border-radius: 9999px; overflow: hidden; position: relative;">
+          <div style="position: absolute; top: 0; bottom: 0; left: 0; width: 80px; background: linear-gradient(90deg, #6366f1, #a855f7); border-radius: 9999px; animation: initLoad 1.4s ease-in-out infinite;"></div>
+        </div>
+        <style>
+          @keyframes initLoad {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(50%); }
+            100% { transform: translateX(230%); }
+          }
+        </style>
+      </div>
+    </div>
     <script type="module" src="/main.tsx"></script>
   </body>
 </html>

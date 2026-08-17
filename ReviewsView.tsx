@@ -276,9 +276,28 @@ export const ReviewsView: React.FC = () => {
         </div>
         
         {loading ? (
-          <div className="text-center py-8 text-slate-400">Loading reviews...</div>
+          <div className="grid gap-4 md:grid-cols-2 animate-pulse">
+            {[1, 2, 3, 4].map((n) => (
+              <div key={n} className="bg-white p-5 rounded-3xl border border-slate-200 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-slate-200" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-3.5 bg-slate-200 rounded w-28" />
+                    <div className="h-2.5 bg-slate-100 rounded w-16" />
+                  </div>
+                  <div className="h-4 bg-slate-100 rounded w-16" />
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-slate-100 rounded w-full" />
+                  <div className="h-3 bg-slate-100 rounded w-3/4" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : displayedReviews.length === 0 ? (
-          <div className="text-center py-8 text-slate-400 bg-white rounded-3xl border border-slate-200">No reviews yet. Be the first to review!</div>
+          <div className="text-center py-8 text-slate-400 bg-white rounded-3xl border border-slate-200">
+            {language === 'bn' ? 'এখনও কোন রিভিউ নেই। প্রথম রিভিউ দিন!' : 'No reviews yet. Be the first to review!'}
+          </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {displayedReviews.map(r => (
