@@ -15,35 +15,47 @@ export default defineConfig(() => {
           enabled: true,
           type: 'module',
         },
-        includeAssets: ['favicon.svg', 'icons/*.png', 'icons/*.svg'],
+        includeAssets: ['app-logo.png', 'icon-192.png', 'icon-512.png', 'favicon.png', 'apple-touch-icon.png', 'favicon.svg'],
         manifest: {
           name: 'Mail Factory',
-          short_name: 'MailFactory',
+          short_name: 'Mail Factory',
           description: 'Bangladesh #1 Trusted Gmail Exchange Platform',
           theme_color: '#4F46E5',
-          background_color: '#ffffff',
+          background_color: '#020617',
           display: 'standalone',
           orientation: 'portrait',
           start_url: '/',
           scope: '/',
           icons: [
             {
-              src: '/app-logo.png',
+              src: '/icon-192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any'
             },
             {
-              src: '/app-logo.png',
+              src: '/icon-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any'
             },
             {
-              src: '/app-logo.png',
+              src: '/icon-192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'maskable'
+            },
+            {
+              src: '/icon-512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable'
+            },
+            {
+              src: '/app-logo.png',
+              sizes: '500x500',
+              type: 'image/png',
+              purpose: 'any'
             }
           ]
         }

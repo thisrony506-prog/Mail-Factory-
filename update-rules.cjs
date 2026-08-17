@@ -1,7 +1,8 @@
-{
+const fs = require('fs');
+
+const rules = {
   "rules": {
     "users": {
-      ".indexOn": ["referralCode", "balance"],
       ".read": "auth != null",
       "$uid": {
         ".read": "auth != null",
@@ -17,16 +18,13 @@
       ".write": "auth != null && (auth.token.email === 'iamronyofficial1@gmail.com' || auth.token.email === 'gmrony135@gmail.com')"
     },
     "used_emails": {
-      ".indexOn": [
-        "email"
-      ],
+      ".indexOn": ["email"],
       ".read": "auth != null",
       "$emailKey": {
-        ".write": "auth != null"
+         ".write": "auth != null"
       }
     },
     "submissions": {
-      ".indexOn": ["userId", "status", "submittedAt"],
       ".read": "auth != null",
       "$subId": {
         ".write": "auth != null && (newData.child('userId').val() === auth.uid || data.child('userId').val() === auth.uid || auth.token.email === 'iamronyofficial1@gmail.com' || auth.token.email === 'gmrony135@gmail.com')"
@@ -39,7 +37,6 @@
       }
     },
     "withdraw_requests": {
-      ".indexOn": ["userId", "status", "requestedAt"],
       ".read": "auth != null",
       "$reqId": {
         ".write": "auth != null && (newData.child('userId').val() === auth.uid || data.child('userId').val() === auth.uid || auth.token.email === 'iamronyofficial1@gmail.com' || auth.token.email === 'gmrony135@gmail.com')"
@@ -67,4 +64,6 @@
       ".write": "auth != null && (auth.token.email === 'iamronyofficial1@gmail.com' || auth.token.email === 'gmrony135@gmail.com')"
     }
   }
-}
+};
+
+fs.writeFileSync('database.rules.json', JSON.stringify(rules, null, 2));

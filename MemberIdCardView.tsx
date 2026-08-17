@@ -607,67 +607,106 @@ export const MemberIdCardView: React.FC<MemberIdCardViewProps> = ({ onBack }) =>
         }
       }
 
-      // --- Draw Official Mail Factory Vector Emblem in Canvas Header ---
+      // Preload the official app logo image for crisp, guaranteed rendering on downloaded canvas
+      const loadAppLogo = (): Promise<HTMLImageElement | null> => {
+        return new Promise((resolve) => {
+          const sources = [
+            effectiveAppLogo,
+            '/app-logo.png',
+            '/icon-512.png',
+            DEFAULT_LOGO,
+          ].filter(Boolean);
+
+          let idx = 0;
+          const tryNext = () => {
+            if (idx >= sources.length) {
+              resolve(null);
+              return;
+            }
+            const currentSrc = sources[idx++];
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              if (img.naturalWidth > 0) resolve(img);
+              else tryNext();
+            };
+            img.onerror = () => tryNext();
+            img.src = currentSrc;
+          };
+
+          tryNext();
+          setTimeout(() => resolve(null), 3000);
+        });
+      };
+
+      const logoImg = await loadAppLogo();
+
+      // --- Draw Official Mail Factory Logo in Canvas Header ---
       const logoBoxX = cardX + 55;
       const logoBoxY = cardY + 40;
       const logoBoxSize = 145;
+      const logoRadius = 28;
 
       // Outer Logo Box
       ctx.fillStyle = activeTheme.idBoxBgHex;
       ctx.beginPath();
-      ctx.roundRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize, 28);
+      ctx.roundRect(logoBoxX, logoBoxY, logoBoxSize, logoBoxSize, logoRadius);
       ctx.fill();
       ctx.strokeStyle = '#f59e0b';
       ctx.lineWidth = 4;
       ctx.stroke();
 
-      // Vector Emblem Drawing on Canvas (Ensures 100% Logo Appearance regardless of CORS)
-      const embCenterX = logoBoxX + logoBoxSize / 2;
-      const embCenterY = logoBoxY + logoBoxSize / 2;
+      if (logoImg) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(logoBoxX + 4, logoBoxY + 4, logoBoxSize - 8, logoBoxSize - 8, logoRadius - 4);
+        ctx.clip();
+        ctx.drawImage(logoImg, logoBoxX + 4, logoBoxY + 4, logoBoxSize - 8, logoBoxSize - 8);
+        ctx.restore();
+      } else {
+        // Vector Emblem Drawing Fallback
+        const embCenterX = logoBoxX + logoBoxSize / 2;
+        const embCenterY = logoBoxY + logoBoxSize / 2;
 
-      // Gear / Factory halo
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(embCenterX, embCenterY - 18, 16, 0, Math.PI * 2);
-      ctx.stroke();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(embCenterX, embCenterY - 18, 16, 0, Math.PI * 2);
+        ctx.stroke();
 
-      // Envelope box
-      ctx.fillStyle = '#0f172a';
-      ctx.beginPath();
-      ctx.roundRect(embCenterX - 45, embCenterY - 14, 90, 56, 8);
-      ctx.fill();
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 3;
-      ctx.stroke();
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.roundRect(embCenterX - 45, embCenterY - 14, 90, 56, 8);
+        ctx.fill();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.stroke();
 
-      // Envelope flap
-      ctx.strokeStyle = '#fcd34d';
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.moveTo(embCenterX - 45, embCenterY - 12);
-      ctx.lineTo(embCenterX, embCenterY + 16);
-      ctx.lineTo(embCenterX + 45, embCenterY - 12);
-      ctx.stroke();
+        ctx.strokeStyle = '#fcd34d';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.moveTo(embCenterX - 45, embCenterY - 12);
+        ctx.lineTo(embCenterX, embCenterY + 16);
+        ctx.lineTo(embCenterX + 45, embCenterY - 12);
+        ctx.stroke();
 
-      // Letter 'M' Monogram
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 5;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      ctx.moveTo(embCenterX - 28, embCenterY + 32);
-      ctx.lineTo(embCenterX - 28, embCenterY + 2);
-      ctx.lineTo(embCenterX, embCenterY + 20);
-      ctx.lineTo(embCenterX + 28, embCenterY + 2);
-      ctx.lineTo(embCenterX + 28, embCenterY + 32);
-      ctx.stroke();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(embCenterX - 28, embCenterY + 32);
+        ctx.lineTo(embCenterX - 28, embCenterY + 2);
+        ctx.lineTo(embCenterX, embCenterY + 20);
+        ctx.lineTo(embCenterX + 28, embCenterY + 2);
+        ctx.lineTo(embCenterX + 28, embCenterY + 32);
+        ctx.stroke();
 
-      // Star badge under emblem
-      ctx.fillStyle = '#fcd34d';
-      ctx.font = 'bold 16px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('★', embCenterX, logoBoxY + logoBoxSize - 8);
+        ctx.fillStyle = '#fcd34d';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('★', embCenterX, logoBoxY + logoBoxSize - 8);
+      }
 
       // --- Header Brand Typography ---
       const brandTextX = logoBoxX + logoBoxSize + 28;
@@ -1012,7 +1051,7 @@ export const MemberIdCardView: React.FC<MemberIdCardViewProps> = ({ onBack }) =>
         ctx.fillRect(rightColX + 30, qrBoxY + 25, 200, 200);
       }
 
-      // QR Center Logo Badge (Official Mail Factory Vector Insignia)
+      // QR Center Logo Badge (Official Mail Factory App Logo)
       const qrCenterX = rightColX + qrBoxW / 2;
       const qrCenterY = qrBoxY + 125;
       const qrCenterRadius = 26;
@@ -1026,43 +1065,55 @@ export const MemberIdCardView: React.FC<MemberIdCardViewProps> = ({ onBack }) =>
       ctx.lineWidth = 3.5;
       ctx.stroke();
 
-      // Inner Theme Shield / Circle
-      ctx.fillStyle = activeTheme.headerGradient[1];
-      ctx.beginPath();
-      ctx.arc(qrCenterX, qrCenterY, qrCenterRadius - 3.5, 0, Math.PI * 2);
-      ctx.fill();
+      if (logoImg) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(qrCenterX, qrCenterY, qrCenterRadius - 3.5, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(
+          logoImg,
+          qrCenterX - (qrCenterRadius - 3.5),
+          qrCenterY - (qrCenterRadius - 3.5),
+          (qrCenterRadius - 3.5) * 2,
+          (qrCenterRadius - 3.5) * 2
+        );
+        ctx.restore();
+      } else {
+        // Inner Theme Shield / Circle Fallback
+        ctx.fillStyle = activeTheme.headerGradient[1];
+        ctx.beginPath();
+        ctx.arc(qrCenterX, qrCenterY, qrCenterRadius - 3.5, 0, Math.PI * 2);
+        ctx.fill();
 
-      // Official Mail Factory 3D Envelope Emblem inside QR center
-      // Envelope base
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath();
-      ctx.roundRect(qrCenterX - 14, qrCenterY - 9, 28, 18, 3);
-      ctx.fill();
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+        // Official Mail Factory 3D Envelope Emblem inside QR center
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.roundRect(qrCenterX - 14, qrCenterY - 9, 28, 18, 3);
+        ctx.fill();
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
 
-      // Envelope flap
-      ctx.strokeStyle = '#fcd34d';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(qrCenterX - 14, qrCenterY - 9);
-      ctx.lineTo(qrCenterX, qrCenterY);
-      ctx.lineTo(qrCenterX + 14, qrCenterY - 9);
-      ctx.stroke();
+        ctx.strokeStyle = '#fcd34d';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(qrCenterX - 14, qrCenterY - 9);
+        ctx.lineTo(qrCenterX, qrCenterY);
+        ctx.lineTo(qrCenterX + 14, qrCenterY - 9);
+        ctx.stroke();
 
-      // 'M' Monogram in center
-      ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      ctx.moveTo(qrCenterX - 8, qrCenterY + 6);
-      ctx.lineTo(qrCenterX - 8, qrCenterY - 4);
-      ctx.lineTo(qrCenterX, qrCenterY + 2);
-      ctx.lineTo(qrCenterX + 8, qrCenterY - 4);
-      ctx.lineTo(qrCenterX + 8, qrCenterY + 6);
-      ctx.stroke();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(qrCenterX - 8, qrCenterY + 6);
+        ctx.lineTo(qrCenterX - 8, qrCenterY - 4);
+        ctx.lineTo(qrCenterX, qrCenterY + 2);
+        ctx.lineTo(qrCenterX + 8, qrCenterY - 4);
+        ctx.lineTo(qrCenterX + 8, qrCenterY + 6);
+        ctx.stroke();
+      }
 
       // Bottom Theme Box of QR
       const qrFooterH = 75;
@@ -1348,15 +1399,22 @@ export const MemberIdCardView: React.FC<MemberIdCardViewProps> = ({ onBack }) =>
                     borderColor: '#f59e0b',
                   }}
                 >
-                  {!logoImgError && effectiveAppLogo ? (
+                  {effectiveAppLogo ? (
                     <img
                       src={effectiveAppLogo}
                       alt="Mail Factory"
                       className="w-full h-full object-cover rounded-xl"
-                      onError={() => setLogoImgError(true)}
+                      crossOrigin="anonymous"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '/app-logo.png';
+                      }}
                     />
                   ) : (
-                    <MailFactoryVectorEmblem className="w-full h-full p-1" />
+                    <img
+                      src="/app-logo.png"
+                      alt="Mail Factory"
+                      className="w-full h-full object-cover rounded-xl"
+                    />
                   )}
                 </div>
               </div>
@@ -1608,6 +1666,7 @@ export const MemberIdCardView: React.FC<MemberIdCardViewProps> = ({ onBack }) =>
                   {/* QR Code Graphic Area */}
                   <div className="p-2.5 bg-white relative flex items-center justify-center">
                     <QRCode
+                      id="card-qr-svg"
                       size={120}
                       level="H"
                       value={verificationUrl}
@@ -1618,15 +1677,22 @@ export const MemberIdCardView: React.FC<MemberIdCardViewProps> = ({ onBack }) =>
                     />
                     {/* Center Overlay Logo with Gold Ring */}
                     <div className="absolute w-9 h-9 sm:w-10 sm:h-10 bg-white border-2 border-amber-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden p-0.5 z-10">
-                      {!logoImgError && effectiveAppLogo ? (
+                      {effectiveAppLogo ? (
                         <img
                           src={effectiveAppLogo}
                           alt="Mail Factory"
                           className="w-full h-full object-cover rounded-full"
-                          onError={() => setLogoImgError(true)}
+                          crossOrigin="anonymous"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/app-logo.png';
+                          }}
                         />
                       ) : (
-                        <MailFactoryVectorEmblem className="w-full h-full" idPrefix="qr-center" />
+                        <img
+                          src="/app-logo.png"
+                          alt="Mail Factory"
+                          className="w-full h-full object-cover rounded-full"
+                        />
                       )}
                     </div>
                   </div>

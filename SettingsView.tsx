@@ -70,12 +70,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }
   };
 
-  const isAdmin = Boolean(
-    user &&
-      user.email &&
-      ['gmrony135@gmail.com', 'mailfactorybd@gmail.com'].includes(user.email)
-  );
-
   const mainBalance = (profile?.balance || 0).toFixed(2);
   const holdBalance = (profile?.hold || 0).toFixed(2);
 
@@ -592,57 +586,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
         </div>
       </div>
 
-      {/* SECTION 5: ADMIN OPTIONS (If Admin) */}
-      {isAdmin && (
-        <div className="rounded-3xl bg-amber-50/90 border border-amber-200/90 p-4 shadow-sm space-y-2">
-          <div className="px-1 pb-1 text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
-            <Award className="w-3.5 h-3.5 text-amber-600" />
-            <span>অ্যাডমিন কন্ট্রোল প্যানেল (Admin Only)</span>
-          </div>
-
-          <div className="space-y-1.5">
-            <button
-              onClick={() => {
-                hapticFeedback.light();
-                setActiveTab('admin_top_sellers');
-              }}
-              className="w-full flex items-center justify-between p-3 bg-white hover:bg-amber-100/60 rounded-2xl border border-amber-200 text-left transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                  <Award className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black text-amber-950">টপ ১০ সেলার ম্যানেজার</h3>
-                  <p className="text-[10px] text-amber-800 font-medium">লিডারবোর্ডের সেরা ১০ জনের তালিকা সেট বা এডিট করুন</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-amber-700" />
-            </button>
-
-            <button
-              onClick={() => {
-                hapticFeedback.light();
-                setActiveTab('admin_reviews');
-              }}
-              className="w-full flex items-center justify-between p-3 bg-white hover:bg-amber-100/60 rounded-2xl border border-amber-200 text-left transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
-                  <Shield className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-black text-slate-800">Admin Review Moderation</h3>
-                  <p className="text-[10px] text-slate-500 font-medium">Approve or reject customer reviews</p>
-                </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-slate-400" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* SECTION 6: ACCOUNT ACTIONS (LOGOUT) */}
+      {/* SECTION: ACCOUNT ACTIONS (LOGOUT) */}
       <div className="pt-2">
         <button
           onClick={handleLogout}

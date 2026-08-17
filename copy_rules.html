@@ -1,3 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Database Rules</title>
+<style>
+body { font-family: monospace; padding: 20px; background: #f4f4f4; }
+textarea { width: 100%; height: 500px; font-family: monospace; padding: 10px; }
+button { padding: 10px 20px; background: #4CAF50; color: white; border: none; cursor: pointer; font-size: 16px; margin-bottom: 20px;}
+</style>
+</head>
+<body>
+<button onclick="copyRules()">Copy Rules to Clipboard</button>
+<p id="msg"></p>
+<textarea id="rulesText" readonly>
 {
   "rules": {
     "users": {
@@ -68,3 +82,15 @@
     }
   }
 }
+</textarea>
+<script>
+function copyRules() {
+  var copyText = document.getElementById("rulesText");
+  copyText.select();
+  copyText.setSelectionRange(0, 99999);
+  navigator.clipboard.writeText(copyText.value);
+  document.getElementById("msg").innerText = "Copied! Now paste it in Firebase Console -> Realtime Database -> Rules";
+}
+</script>
+</body>
+</html>

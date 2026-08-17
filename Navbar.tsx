@@ -102,24 +102,22 @@ export const Navbar: React.FC<NavbarProps> = ({
     }
   };
 
-  const isAdmin = user && ['gmrony135@gmail.com', 'mailfactorybd@gmail.com'].includes(user.email || '');
-
   const mainBalance = (Number(profile?.balance) || 0).toFixed(2);
   const holdBalance = (Number(profile?.hold) || 0).toFixed(2);
 
   return (
     <>
       <header className="sticky top-0 z-40 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-800 text-white shadow-lg backdrop-blur-md">
-        <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-2.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-3">
           {/* Left Area: 3-Line Menu Button + Brand & Logo */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1">
             {/* Modern High-End Menu Button */}
             <button
               onClick={() => {
                 hapticFeedback.medium();
                 setSettingsDrawerOpen(true);
               }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-b from-white/15 to-white/5 hover:from-amber-400/20 hover:to-white/15 border border-white/20 hover:border-amber-300/50 shadow-md hover:shadow-amber-500/20 backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shrink-0 flex flex-col items-center justify-center gap-1.5 p-2 group relative overflow-hidden"
+              className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-gradient-to-b from-white/15 to-white/5 hover:from-amber-400/20 hover:to-white/15 border border-white/20 hover:border-amber-300/50 shadow-md hover:shadow-amber-500/20 backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer shrink-0 flex flex-col items-center justify-center gap-1 p-1.5 group relative overflow-hidden"
               title="Menu / মেনু"
               aria-label="Open side menu"
             >
@@ -127,30 +125,33 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="absolute inset-0 bg-gradient-to-tr from-amber-400/0 via-amber-300/10 to-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
               {/* Modern 3-bar precision tiered menu lines */}
-              <span className="w-5 h-[2.5px] rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-400 shadow-2xs group-hover:w-5 transition-all duration-300" />
-              <span className="w-3.5 h-[2.5px] rounded-full bg-gradient-to-r from-amber-200 via-amber-300 to-amber-400 shadow-2xs group-hover:w-5 group-hover:from-amber-300 group-hover:to-amber-500 transition-all duration-300 self-start ml-0.5 group-hover:ml-0 group-hover:self-center" />
-              <span className="w-5 h-[2.5px] rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 shadow-2xs group-hover:w-4 transition-all duration-300" />
+              <span className="w-4 sm:w-5 h-[2px] sm:h-[2.5px] rounded-full bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-400 shadow-2xs group-hover:w-5 transition-all duration-300" />
+              <span className="w-3 sm:w-3.5 h-[2px] sm:h-[2.5px] rounded-full bg-gradient-to-r from-amber-200 via-amber-300 to-amber-400 shadow-2xs group-hover:w-5 group-hover:from-amber-300 group-hover:to-amber-500 transition-all duration-300 self-start ml-0.5 group-hover:ml-0 group-hover:self-center" />
+              <span className="w-4 sm:w-5 h-[2px] sm:h-[2.5px] rounded-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-300 shadow-2xs group-hover:w-4 transition-all duration-300" />
             </button>
 
             <button
               onClick={() => setActiveTab('home')}
-              className="flex items-center gap-2.5 text-left group transition-transform active:scale-95"
+              className="flex items-center gap-1.5 sm:gap-2.5 text-left group transition-transform active:scale-95 min-w-0"
             >
               <img 
-                src={appLogo} 
+                src={appLogo || '/app-logo.png'} 
                 alt="Mail Factory" 
-                className="w-10 h-10 rounded-xl shadow-sm border border-white/20 object-cover" 
+                className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl shadow-sm border border-white/20 object-cover shrink-0" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/app-logo.png';
+                }}
               />
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <div className="flex items-center gap-1 leading-none">
-                  <span className="text-xl font-extrabold tracking-tight text-white">Mail</span>
-                  <span className="text-xl font-black text-amber-300">Factory</span>
+                  <span className="text-base sm:text-lg md:text-xl font-extrabold tracking-tight text-white whitespace-nowrap">Mail</span>
+                  <span className="text-base sm:text-lg md:text-xl font-black text-amber-300 whitespace-nowrap">Factory</span>
                 </div>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[10px] font-semibold tracking-wider text-indigo-200 uppercase">
+                <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 min-w-0">
+                  <span className="text-[8px] sm:text-[9px] md:text-[10px] font-semibold tracking-wider text-indigo-200 uppercase truncate max-w-[85px] xs:max-w-[130px] sm:max-w-none">
                     {t.slogan}
                   </span>
-                  <div className="hidden sm:flex items-center gap-1 bg-black/20 px-1.5 py-0.5 rounded-full border border-white/10">
+                  <div className="hidden md:flex items-center gap-1 bg-black/20 px-1.5 py-0.5 rounded-full border border-white/10 shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     <span className="text-[8px] font-mono text-emerald-300">SERVER ONLINE (45ms)</span>
                   </div>
@@ -160,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
             {/* Install App Button (PWA) */}
             {isInstallable && (
               <button
@@ -168,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   hapticFeedback.medium();
                   promptInstall();
                 }}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-amber-900 text-xs font-black shadow-sm transition-all"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-400 hover:bg-amber-300 text-amber-900 text-xs font-black shadow-sm transition-all shrink-0"
                 title="Install Mail Factory App"
               >
                 <Download className="w-3.5 h-3.5" />
@@ -180,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {user && profile ? (
               <button
                 onClick={() => setActiveTab('withdraw')}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-bold text-white transition-all shadow-inner"
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 border border-white/20 text-xs font-bold text-white transition-all shadow-inner shrink-0"
                 title="Click to withdraw"
               >
                 <Wallet className="w-3.5 h-3.5 text-amber-300" />
@@ -189,25 +190,25 @@ export const Navbar: React.FC<NavbarProps> = ({
             ) : (
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="px-3 py-1.5 rounded-full bg-white text-indigo-700 text-xs font-bold shadow hover:bg-indigo-50 active:scale-95 transition-all"
+                className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white text-indigo-700 text-xs font-bold shadow hover:bg-indigo-50 active:scale-95 transition-all shrink-0"
               >
                 {t.login}
               </button>
             )}
 
             {/* Multi-Language Dropdown */}
-            <div className="relative" ref={langRef}>
+            <div className="relative shrink-0" ref={langRef}>
               <button
                 onClick={() => {
                   hapticFeedback.light();
                   setIsLangMenuOpen(!isLangMenuOpen);
                 }}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold flex items-center gap-1.5 transition-all"
+                className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition-all shrink-0"
                 title="Select Language"
               >
-                <Globe className="w-4 h-4 text-indigo-200" />
+                <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-200" />
                 <span className="text-xs">{currentLangObj.flag}</span>
-                <span className="uppercase text-[11px] font-extrabold hidden xs:inline">{currentLangObj.code}</span>
+                <span className="uppercase text-[10px] sm:text-[11px] font-extrabold hidden md:inline">{currentLangObj.code}</span>
               </button>
 
               {isLangMenuOpen && (
@@ -250,20 +251,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Support Chat Trigger */}
             <button
               onClick={() => setChatDrawerOpen(true)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 relative transition-all cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 relative transition-all cursor-pointer shrink-0"
               title="Live Support Chat"
             >
-              <MessageSquare className="w-4 h-4 text-indigo-100" />
+              <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-100" />
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400"></span>
             </button>
 
             {/* Notification Bell */}
             <button
               onClick={() => setNotifDrawerOpen(true)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 relative transition-all cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 relative transition-all cursor-pointer shrink-0"
               title="Notifications"
             >
-              <Bell className="w-4 h-4 text-indigo-100" />
+              <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-100" />
               {unreadNotifsCount > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center border-2 border-indigo-700 animate-pulse">
                   {unreadNotifsCount}
@@ -730,47 +731,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
                 </div>
 
-                {/* Group 4: Admin Panel (If Admin) */}
-                {isAdmin && (
-                  <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
-                    <div className="text-[10px] font-extrabold text-amber-600 uppercase tracking-wider px-2 py-0.5 flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      <span>{language === 'bn' ? 'এডমিন কন্ট্রোল' : 'Admin Panel'}</span>
-                    </div>
-
-                    <button
-                      onClick={() => closeAndExecute(() => setActiveTab('admin_reviews'))}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-900 font-bold transition-all cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="p-1.5 rounded-lg bg-amber-200/80 text-amber-900">
-                          <Star className="w-4 h-4" />
-                        </div>
-                        <span className="text-xs font-bold">
-                          {language === 'bn' ? 'রিভিউ ম্যানেজমেন্ট' : 'Manage Reviews'}
-                        </span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-amber-700" />
-                    </button>
-
-                    <button
-                      onClick={() => closeAndExecute(() => setActiveTab('admin_top_sellers'))}
-                      className="w-full flex items-center justify-between p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100/80 border border-amber-200 text-amber-900 font-bold transition-all cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div className="p-1.5 rounded-lg bg-amber-200/80 text-amber-900">
-                          <Trophy className="w-4 h-4" />
-                        </div>
-                        <span className="text-xs font-bold">
-                          {language === 'bn' ? 'টপ সেলার কনফিগ' : 'Top Sellers Config'}
-                        </span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-amber-700" />
-                    </button>
-                  </div>
-                )}
-
-                {/* Group 5: Account Actions & Logout */}
+                {/* Group 4: Account Actions & Logout */}
                 {user && (
                   <div className="space-y-1.5 pt-2 border-t border-slate-200/60">
                     <button

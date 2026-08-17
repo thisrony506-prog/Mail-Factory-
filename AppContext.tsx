@@ -137,8 +137,6 @@ export const TAB_TO_PATH: Record<ActiveTab, string> = {
   profile: '/profile',
   about: '/about',
   privacy: '/privacy',
-  admin_reviews: '/admin-reviews',
-  admin_top_sellers: '/admin-top-sellers',
   settings: '/settings',
   referral_leaderboard: '/referral-leaderboard',
   change_password: '/change-password',
@@ -161,10 +159,6 @@ export const PATH_TO_TAB: Record<string, ActiveTab> = {
   '/settings': 'settings',
   '/referral-leaderboard': 'referral_leaderboard',
   '/referral': 'referral_leaderboard',
-  '/admin-reviews': 'admin_reviews',
-  '/admin/reviews': 'admin_reviews',
-  '/admin-top-sellers': 'admin_top_sellers',
-  '/admin/sellers': 'admin_top_sellers',
   '/change-password': 'change_password',
   '/edit-profile': 'edit_profile',
   '/id-card': 'id_card',
@@ -203,7 +197,14 @@ const AppContext = createContext<AppContextType | null>(null);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(() => {
+    try {
+      const cached = localStorage.getItem('mf_last_user_profile');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState<boolean>(true);
   const [language, setLanguage] = useState<Language>(() => {
     return (localStorage.getItem('mf_lang') as Language) || 'bn';
@@ -232,9 +233,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-  const [levels, setLevels] = useState<LevelConfig[]>(DEFAULT_LEVELS);
-  const [reviewShifts, setReviewShifts] = useState<Record<string, ShiftInfo>>(DEFAULT_SHIFTS);
-  const [paymentMethods, setPaymentMethods] = useState<Record<string, PaymentMethodConfig>>(DEFAULT_PAYMENT_METHODS);
+  const [levels, setLevels] = useState<LevelConfig[]>(() => {
+    try {
+      const cached = localStorage.getItem('mf_levels_cache');
+      return cached ? JSON.parse(cached) : DEFAULT_LEVELS;
+    } catch {
+      return DEFAULT_LEVELS;
+    }
+  });
+  const [reviewShifts, setReviewShifts] = useState<Record<string, ShiftInfo>>(() => {
+    try {
+      const cached = localStorage.getItem('mf_shifts_cache');
+      return cached ? JSON.parse(cached) : DEFAULT_SHIFTS;
+    } catch {
+      return DEFAULT_SHIFTS;
+    }
+  });
+  const [paymentMethods, setPaymentMethods] = useState<Record<string, PaymentMethodConfig>>(() => {
+    try {
+      const cached = localStorage.getItem('mf_payment_methods_cache');
+      return cached ? JSON.parse(cached) : DEFAULT_PAYMENT_METHODS;
+    } catch {
+      return DEFAULT_PAYMENT_METHODS;
+    }
+  });
   const [maintenanceMode, setMaintenanceMode] = useState<boolean>(false);
   const [isWithdrawDisabled, setIsWithdrawDisabled] = useState<boolean>(false);
   const [minWithdraw, setMinWithdraw] = useState<number>(100);
@@ -392,15 +414,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Manage connection on visibility change to prevent "Database is closing/hidden" errors
+  // Manage connection gracefully to prevent "Database is closing/hidden" errors
   useEffect(() => {
     const handleVisibility = () => {
       try {
         if (document.visibilityState === 'visible') {
           goOnline(db);
-        } else if (document.visibilityState === 'hidden') {
-          // Pause websocket keepalives gracefully when hidden
-          try { goOffline(db); } catch {}
         }
       } catch (e) {
         console.warn('goOnline recovery catch:', e);
@@ -413,6 +432,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.warn('goOnline network catch:', e);
       }
     };
+
+    // Ensure database is online on mount
+    try {
+      goOnline(db);
+    } catch {}
 
     document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('online', handleOnline);
@@ -431,7 +455,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         (snap) => {
           if (snap.exists()) {
             const val = snap.val();
-            if (val.review_shifts) setReviewShifts(val.review_shifts);
+            if (val.review_shifts) {
+              setReviewShifts(val.review_shifts);
+              try { localStorage.setItem('mf_shifts_cache', JSON.stringify(val.review_shifts)); } catch {}
+            }
             const pMethods = val.payment_methods;
             if (pMethods && typeof pMethods === 'object') {
               // Force 6% fee globally on all loaded payment methods
@@ -441,6 +468,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 }
               });
               setPaymentMethods(pMethods);
+              try { localStorage.setItem('mf_payment_methods_cache', JSON.stringify(pMethods)); } catch {}
             } else {
               setPaymentMethods(DEFAULT_PAYMENT_METHODS);
             }
@@ -466,6 +494,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               if (parsedLevels.length > 0) {
                 parsedLevels.sort((a, b) => a.approved - b.approved);
                 setLevels(parsedLevels);
+                try { localStorage.setItem('mf_levels_cache', JSON.stringify(parsedLevels)); } catch {}
               }
             }
           }
@@ -592,7 +621,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubAuth = onAuthStateChanged(auth, async (currUser) => {
       cleanupInnerListeners();
       setUser(currUser);
+
       if (currUser) {
+        let isResolved = false;
+        const markLoaded = () => {
+          if (!isResolved) {
+            isResolved = true;
+            setLoading(false);
+          }
+        };
+
+        // Safety fallback timer (max 1.5 seconds) so app is never stuck on slow networks
+        const safetyTimer = setTimeout(() => {
+          markLoaded();
+        }, 1500);
+
         try {
           const userRef = ref(db, `users/${currUser.uid}`);
           const notifsRef = ref(db, `users/${currUser.uid}/notifications`);
@@ -634,15 +677,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 const data = snap.val() as UserProfile;
                 data.uid = currUser.uid;
                 setProfile(data);
+                try {
+                  localStorage.setItem('mf_last_user_profile', JSON.stringify(data));
+                } catch {}
               }
+              clearTimeout(safetyTimer);
+              markLoaded();
             },
             (err) => {
               console.warn('UserRef connection notice:', err);
+              clearTimeout(safetyTimer);
+              markLoaded();
             }
           );
 
-          // Fetch user submissions (Admins listen to master submissions; regular users listen to private user_submissions)
-          const subRef = isAdminUser ? ref(db, 'submissions') : ref(db, `user_submissions/${currUser.uid}`);
+          // Fetch user submissions (Admins listen to master submissions; regular users query master submissions by userId)
+          const subRef = isAdminUser ? ref(db, 'submissions') : query(ref(db, 'submissions'), orderByChild('userId'), equalTo(currUser.uid));
           unsubSubRef = onValue(
             subRef,
             (snap) => {
@@ -664,8 +714,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             }
           );
 
-          // Fetch user withdrawals (Admins listen to master requests; regular users listen to private user_withdrawals)
-          const wdRef = isAdminUser ? ref(db, 'withdraw_requests') : ref(db, `user_withdrawals/${currUser.uid}`);
+          // Fetch user withdrawals (Admins listen to master requests; regular users query master requests by userId)
+          const wdRef = isAdminUser ? ref(db, 'withdraw_requests') : query(ref(db, 'withdraw_requests'), orderByChild('userId'), equalTo(currUser.uid));
           unsubWdRef = onValue(
             wdRef,
             (snap) => {
@@ -706,13 +756,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           );
         } catch (e) {
           console.warn('Profile sync error:', e);
+          clearTimeout(safetyTimer);
+          markLoaded();
         }
       } else {
         setProfile(null);
         setSubmissions([]);
         setWithdrawRequests([]);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
@@ -774,6 +826,56 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Submit Gmail Exchange
+  
+  // --- Client-Side Real-Time Syncing (Self-Healing Balances) ---
+  useEffect(() => {
+    if (!user || !profile || (submissions.length === 0 && withdrawRequests.length === 0)) return;
+
+    let balanceDelta = 0;
+    let holdDelta = 0;
+    const updates = {};
+
+    submissions.forEach(sub => {
+        if (sub.status === 'approved' && !sub.processedForBalance) {
+            balanceDelta += sub.totalAmount;
+            holdDelta -= sub.totalAmount;
+            updates[`submissions/${sub.key}/processedForBalance`] = true;
+        } else if (sub.status === 'rejected' && !sub.processedForBalance) {
+            holdDelta -= sub.totalAmount;
+            updates[`submissions/${sub.key}/processedForBalance`] = true;
+        }
+    });
+
+    withdrawRequests.forEach(wd => {
+        if (wd.status === 'rejected' && !wd.processedForBalance) {
+            balanceDelta += wd.amount;
+            updates[`withdraw_requests/${wd.key}/processedForBalance`] = true;
+        } else if (wd.status === 'approved' && !wd.processedForBalance) {
+            // Already deducted upon request
+            updates[`withdraw_requests/${wd.key}/processedForBalance`] = true;
+        }
+    });
+
+    if (Object.keys(updates).length > 0) {
+        const applyReconciliation = async () => {
+            try {
+                if (balanceDelta !== 0 || holdDelta !== 0) {
+                    updates[`users/${user.uid}/balance`] = (profile.balance || 0) + balanceDelta;
+                    updates[`users/${user.uid}/hold`] = Math.max(0, (profile.hold || 0) + holdDelta);
+                    if (balanceDelta > 0) {
+                        updates[`users/${user.uid}/totalEarnings`] = (profile.totalEarnings || 0) + balanceDelta;
+                    }
+                }
+                await update(ref(db), updates);
+            } catch (e) {
+                console.error('Failed to sync real-time balance', e);
+            }
+        };
+        applyReconciliation();
+    }
+  }, [submissions, withdrawRequests, profile?.balance, profile?.hold, profile?.totalEarnings, user]);
+  // -----------------------------------------------------------
+
   const submitGmails = async (data: {
     gmails: Array<{ email: string; password: string; recoveryEmail?: string }>;
     type: 'new' | 'old';
@@ -799,7 +901,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }
 
-      // Create submission
+            // Create submission
       const newSubRef = push(ref(db, 'submissions'));
       const subKey = newSubRef.key || String(Date.now());
       const newSub: Submission = {
@@ -818,20 +920,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         rate: data.rate,
         count: data.count,
         commission_percent: commissionPercent,
+        
       };
 
-      await set(newSubRef, newSub);
-      try {
-        await set(ref(db, `user_submissions/${user.uid}/${subKey}`), newSub);
-      } catch {
-        // safe fallback
-      }
-
+      const updates: any = {};
+      updates[`submissions/${subKey}`] = newSub;
+      updates[`users/${user.uid}/hold`] = (profile?.hold || 0) + data.totalAmount;
+      updates[`users/${user.uid}/total_submitted`] = (profile?.total_submitted || 0) + data.count;
+      
       // Record in used_emails
       for (const g of data.gmails) {
-        await push(ref(db, 'used_emails'), { email: g.email.toLowerCase().trim(), submittedAt: Date.now() });
+        const emailRef = push(ref(db, 'used_emails'));
+        updates[`used_emails/${emailRef.key}`] = { email: g.email.toLowerCase().trim(), submittedAt: Date.now() };
       }
 
+      await update(ref(db), updates);
       addNotification(
         'Submission Received 📩',
         `${data.count} ${data.type.toUpperCase()} Gmail(s) submitted for ৳${data.totalAmount}. Review is in progress!`,
@@ -867,7 +970,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, message: `Insufficient balance. Available: ৳${(profile.balance || 0).toFixed(2)}` };
     }
 
-    try {
+        try {
       const newWdRef = push(ref(db, 'withdraw_requests'));
       const wdKey = newWdRef.key || String(Date.now());
       const newWd: WithdrawRequest = {
@@ -881,35 +984,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         paymentNumber: data.accountNumber,
         status: 'pending',
         requestedAt: Date.now(),
+        
       };
 
-      await set(newWdRef, newWd);
-      try {
-        await set(ref(db, `user_withdrawals/${user.uid}/${wdKey}`), newWd);
-      } catch {
-        // safe fallback
-      }
+      const updates: any = {};
+      updates[`withdraw_requests/${wdKey}`] = newWd;
+      updates[`users/${user.uid}/balance`] = (profile.balance || 0) - data.amount;
+      updates[`users/${user.uid}/total_withdrawn`] = (profile.total_withdrawn || 0) + data.amount;
+      updates[`users/${user.uid}/paymentNumber`] = data.accountNumber;
+      updates[`users/${user.uid}/paymentMethod`] = data.method;
 
-      // Save user's payment details
-      try {
-        await update(ref(db, `users/${user.uid}`), {
-          paymentNumber: data.accountNumber,
-          paymentMethod: data.method,
-        });
-      } catch {
-        // safe fallback
-      }
+      await update(ref(db), updates);
+    } catch (e: any) {
+      return { success: false, message: e.message || 'Withdraw failed' };
+    }
 
-      addNotification(
+    addNotification(
         'Withdrawal Requested 💸',
         `৳${data.amount} requested via ${data.methodName}. Payout will arrive in 24-48 hours.`,
         'warning'
       );
 
       return { success: true };
-    } catch (err: any) {
-      return { success: false, message: err.message || 'Withdrawal failed.' };
-    }
   };
 
   // Send Chat message

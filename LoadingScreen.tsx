@@ -42,12 +42,12 @@ export const LoadingScreen: React.FC<LoadingScreenProps> = ({ message }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setStepIndex((prev) => (prev + 1) % steps.length);
-    }, 1800);
+    }, 900);
 
-    // If loading takes more than 9 seconds, show a soft refresh hint
+    // If loading takes more than 5 seconds, show a soft refresh hint
     const timer = setTimeout(() => {
       setShowRetry(true);
-    }, 9000);
+    }, 5000);
 
     return () => {
       clearInterval(interval);

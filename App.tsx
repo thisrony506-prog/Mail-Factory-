@@ -11,8 +11,6 @@ import { WithdrawView } from './WithdrawView';
 import { PrivacyView } from './PrivacyView';
 import { AboutView } from './AboutView';
 import { ReviewsView } from './ReviewsView';
-import { AdminReviewsView } from './AdminReviewsView';
-import { AdminTopSellersView } from './AdminTopSellersView';
 import { SettingsView } from './SettingsView';
 import { ChangePasswordView } from './ChangePasswordView';
 import { EditProfileView } from './EditProfileView';
@@ -105,8 +103,6 @@ const MainLayout: React.FC = () => {
         )}
         {activeTab === 'withdraw' && <WithdrawView />}
         {activeTab === 'reviews' && <ReviewsView />}
-        {activeTab === 'admin_reviews' && <AdminReviewsView />}
-        {activeTab === 'admin_top_sellers' && <AdminTopSellersView />}
         {activeTab === 'referral_leaderboard' && <ReferralLeaderboard />}
         {activeTab === 'change_password' && <ChangePasswordView />}
         {activeTab === 'edit_profile' && <EditProfileView />}

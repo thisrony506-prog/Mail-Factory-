@@ -81,8 +81,6 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
     action();
   };
 
-  const isAdmin = user && ['gmrony135@gmail.com', 'mailfactorybd@gmail.com'].includes(user.email || '');
-
   return (
     <AnimatePresence>
       {isSettingsDrawerOpen && (
@@ -384,49 +382,7 @@ export const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
             </button>
           </div>
 
-          {/* SECTION 2: ADMIN OPTIONS (If applicable) */}
-          {isAdmin && (
-            <div className="pt-3 space-y-1">
-              <div className="px-2 pb-1 text-[10px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-1">
-                <Award className="w-3.5 h-3.5" />
-                <span>{language === 'bn' ? 'অ্যাডমিন কন্ট্রোল' : 'Admin Controls'}</span>
-              </div>
-
-              <button
-                onClick={() => closeAndExecute(() => setActiveTab('admin_top_sellers'))}
-                className="w-full flex items-center justify-between p-3 bg-amber-50/80 hover:bg-amber-100 border border-amber-200 rounded-2xl transition-all cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs">
-                    <Award className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <h5 className="text-xs font-black text-amber-950">টপ ১০ সেলার ম্যানেজার</h5>
-                    <span className="text-[10px] text-amber-800 font-medium">লিডারবোর্ডের তালিকা নিয়ন্ত্রণ</span>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-amber-700" />
-              </button>
-
-              <button
-                onClick={() => closeAndExecute(() => setActiveTab('admin_reviews'))}
-                className="w-full flex items-center justify-between p-3 bg-rose-50/80 hover:bg-rose-100 border border-rose-200 rounded-2xl transition-all cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs">
-                    <Shield className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <h5 className="text-xs font-black text-rose-950">Review Moderation</h5>
-                    <span className="text-[10px] text-rose-800 font-medium">Approve or delete reviews</span>
-                  </div>
-                </div>
-                <ChevronRight className="w-4 h-4 text-rose-700" />
-              </button>
-            </div>
-          )}
-
-          {/* SECTION 3: HELP & SUPPORT */}
+          {/* SECTION 2: HELP & SUPPORT */}
           <div className="pt-3 space-y-1">
             <div className="px-2 pb-1 text-[10px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1">
               <HelpCircle className="w-3 h-3 text-indigo-500" />
